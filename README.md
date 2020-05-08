@@ -1,159 +1,138 @@
-# ECE141b Spring 2019 - Assignment1
-## Tokenization and Command Processing
-### Due Monday, April 8 -- by 11:15pm!
+# ECE141 - Spring 2019 -- Assignment #2
+### Encoding/Decoding Dynamic Data Values
+### Due, April 15 2019 @ 11:15pm
 
-## Preliminary tools
-Building a relational database is a non-trival execise. A common pattern found in the most powerful automated systems, a RDMBS includes its own programming language called SQL (structured query language).  This assignment will lay the foundation for our own version of a SQL interpreter. 
+In this assignment you're going to be building out some fundamental classes (models) to deal with data handling. All the assignments after this one deal with core database programming.
 
-## Part 1 -- Building a Tokenizer
+### Quick note on working with project files
 
-For part 1, you need to enable command input tokenization in your environment. This will be used by the command parsing and routing system when a user provides input (via the terminal or a script).  The `Tokenizer` converts raw textual input into small units (called Tokens) suitable for parsing.  Here's a snippet from your `main.cpp` file, showing how your `Tokenizer` is invoked:
+> In assignment one, you worked on a `Tokenizer` and simple `Statement` construction and command-routing.  Assignment2, and all subsequent assignments, will build upon the prior assignments.
+
+> For most assignments,  new files (with new capabilities) will be introducted into the system. Keeping your files in sync from one assignment to the next could be huge hassle. This is because the project files you get from an assignment don't include the changes you made to files in your last assignment.
+
+> Our answer to "keeping our sanity" as we incrementally update our system, is simple. With each new assignment, we expect that you'll take ALL your code files (.hpp and .cpp) from the _prior_ assignment, and copy them into your new project folder. You can safely overwrite all the files in your project, and the NEW project files won't have a counterpart in the prior assignment. 
+
+Just follow this process:
+
+1. Check out your new assignment from github classroom
+2. Copy all the source files (.cpp, .hpp, student.json) from your LAST assignment, on top of files from NEW assignment
+
+If you're using an IDE, make sure to rescan the files in your project folder to pick up new files added in the new assignment
+
+## Part 1 -- Dynamic Types with a `Value` Class
+
+One of the key capabilities of your database is to manage (store/retrieve) data in a variety of types (int, varchar, date,...). Python makes easy work of this by supporting dynamic typing. C++, on the other hand, is quite demanding about strong data types. Since your DB needs to support multiple data types, you'll need to provide a solution to deal with this problem.
+
+Generally speaking, you have a few alternatives: 
+
+1. A generic base class, with nested sub-classes for each actual type you want to handle (bool, int, float, unix_timestamp, varchar,...)
+2. A dynamic class type that can intrinsically store any type of data you want to handle
+3. Others alternatives you can think of?
+
+Any of these strategies to data handling can be made to work, and it's up to you to decide which you want to implement. No alternative is perfect, and all will present trade-offs in terms of performance and complexity. 
+
+### Requirements
+
+1. You will create one or more classes (in `Value.hpp` and `Value.cpp`) that allow you to store data (in memory) that hold data-values described by a database table schema.  As we discussed in class, a schema describes all the fields in a given table. For a `Contact` schema, that might include properties like `[name, address, city, state, zip, phone, email, birthday...]`. 
+
+2. Check the comments in the existing `Value.hpp` file to see what methods you MUST implement (also shown below)
+
+3. Your `Value` class(es) must be support the following types: bool, int, float, unix_timestamp, varchar (others if you like). 
+
+4. Your solution must not leak memory, and demonstrate reasonable memory and performance efficiency 
+
+5. Implement `Value::debugDump(std::ostream &anOutput)` that outputs a description of the current state of your value, in the format shown below (in this example your Value is holding a float):
 
 ```
-    std::string theUserInput;
-    bool running=true;
+   type: float, value: 3.14
+```
+
+### Creating a Value class
+
+The Value class will provide functionality to allow your to system to store dynamic user values.
+
+```
+  class Value {
+  
+    //YOU have to fill out this class according to your strategy for holding variant data types...
     
-    std::cout << std::endl << "> ";
-    while (running && std::getline(std::cin, theUserInput)) {
-      if(theUserInput.length()) {
-        std::stringstream theStream(theUserInput);
-        ECE141::Tokenizer theTokenizer(theStream);
-        theTokenizer.tokenize();
-        theResult=theProcessor.processInput(theTokenizer);
-      }
-      if(ECE141::userTerminated==theResult.code)
-        running=false;
-      else std::cout << std::endl << "> ";
-    }
-```    
+    //This class needs multiple ctors() for each type (book, timestamp, int, float, varchar)...
+    //This class needs operator=, for each basic type...
+    //This class needs conversion operator for each basic type
 
-After tokenization, your `CommandProcessor` will attempt to make sense of the given user input (tokens), and attempt to run code associated with the given input commands. (This is what you'll handle in Part2 of this assignment).  
-
-### Tokenizer.hpp and Tokenizer.cpp
-
-Please review the `Tokenizer` class found in the Tokenizer.hpp and Tokenizer.cpp files.  You'll notice that the interface is pretty straightforward (as shown in `Tokenizer.hpp`).  However, important functionality is missing. Sadly, the Tokenizer is having an existential crisis, and doesn't actually do anything. It REALLY wants to, but needs your help.  
-
-One thing worth pointing out are the various keywords that comprise our various command languages. Please take a moment to review the complete list of keywords in the `keywords.hpp` file.
-
-Your first task will implement the method, `Tokenizer::Tokenize`. This is necessary to convert user input from the command line (or a SQL script) into a form that your RDBMS can execute. Woot! 
-
-### What kind of input do you need to tokenize?
-
-There are really three types of input you have to be able to deal with:
-
-1. Meta-commands that control the system, such as the `Quit` command which terminates the app. 
-2. Database-level commands (like "Create database xxx", or "Show databases")
-3. Data-oriented commands (like "Create table...", "Show tables", "insert (...) into tablename", ...)
-
-Below you will find a list of inputs that your `Tokenizer` class will need to be able to handle to complete this assignment. 
-
-#### Basic System Commands
-
-Here is a list of sample system commands your tokenizer must be able to consume and tokenize. Each is a single keyword:
-
-```
-  version
-  help
-  quit
-```
-
-#### Database-level Commands
-
-Database level commands are used to manage the database files used by your system. Below is a list of statements that are used by your database command processor (given in a future assignment). Your `Tokenizer` has to be able to tokenize these statements as well.  NOTE: below when you see a word in brackets, e.g. <databasename>, it's important to realize that the brackets are only shown here for clarity. They won't actually appear in your input buffer.  In reality, the word inside the brackets is usually interpreted as an "identifier", like the name of a table or database. 
-
-```
-  create database <dbname>  
-  show databases
-  use database <dbname>
-  drop database <dbname>
-```
-
-#### Table-related Commands
-
-Table related commands are the most common type of input your system will receive. A user of your RDMBS will generally choose a database, and input table-related commands to insert, update, search and delete records. Below is a list of tabale-related statements your `Tokenizer` will need to be able to process:
-
-```
-  create table <tablename> (id into auto_increment primary key, name varchar(20) not NULL);  
-  insert into <tablename> (field1, field2,...) values (value1, value2...) 
-  select * from <tablename> where field1=const1 
-  drop table <tablename>
-  describe <tablename>
-  show tables
-  update <tablename> set amount=3.14 where id=2
-  delete from <tablename> where id = 2
-```
-
-## Part 2 -- Basic Command Routing
-
-As we discussed in class, command routing refers to the process of:
-
-1. tokenizing raw user input (from command line or script)
-2. parsing given tokens into valid statements that may be routed and exectuted (interpreted)
-3. routing the given statement to the proper command processor to be executed 
-4. executing the given statement (perform associated work, log and report errors)
-
-In `main.cpp`, user input is tokenized, and the tokenizer is passed to the `CommandProcessor::processInput` method.  The `processInput` method attempts to create and exectute one or more valid statements. First, it calls `getStatement`, where you will write code to examine (parse) the given tokens, and attempt to match them with a known statement (e.g. version, help, quit). If you got valid input, you'll create and return an associated statement, which `processInput` will then pass to a the `interpret(statement)` method for execution.  If a valid statement can't be created, then an error is returned.
-
-NOTE: For this part of the assignment, you need to implement the `getStatement` and `interpret` methods in `CommandProcessor.cpp`.
-
-### Version Command
-
-Your first system command is "version". The version command will display the current version number of your system. For this class, your version number will reflect the week -- so your first version will be "ECEDB - version 1". 
-
-In order to handle this command, you must do two things:
-1. In `CommandProcessor::getStatement` you must be able to create and return a `Statement` object that is constructed with an argument that represents a "version" token. 
-2. In `CommandProcessor::interpret` you need to recognize that the `Statement` object was initialized with a "quit" keyword, and then call a your own method to handle the Quit command.
-
-### Help Command
-
-The second system command is "help". Like most command-line tools, your "help" command will print a list of available commands to the standard output terminal.  For now, all you need to show is this:
-
-```
-  version -- shows the current version of this application
-  help -- shows this list of commands
-  quit -- terminates the execution of this DB application
-```
-
-Once again, you'll update `CommandProcessor::getStatement` to handle the "help" keyword (and token), and update the `CommandProcessor::interpet` method to deal with `Statement` objects that as initialized with a "help" keyword. 
-
-### Quit Command
-
-No doubt you guessed that the quit command will cause your applicate to terminate. The question is how?  Take another look at the main loop in your `main.cpp` file:
-
-```
-    std::string theUserInput;
-    bool running=true;
+    size_t getSize();
+    DataType getType();
     
-    std::cout << std::endl << "> ";
-    while (running && std::getline(std::cin, theUserInput)) {
-      if(theUserInput.length()) {
-        std::stringstream theStream(theUserInput);
-        ECE141::Tokenizer theTokenizer(theStream);
-        theTokenizer.tokenize();
-        theResult=theProcessor.processInput(theTokenizer);
-      }
-      if(ECE141::userTerminated==theResult.code)
-        running=false;
-      else std::cout << std::endl << "> ";
-    }
+    StatusResult become(DataType aType); //cause the value to assume given type
+
+    friend bool operator < (const Value &arg1, const Value &arg2) {}  //your data must be comparable...
+
+  };  
 ```
 
-Notice that the main loop will continue as long as the `running` variable is true (as it is by default).  When the user enters the "quit" command, you are expected to create a quit-statement. The quit-statement will be executed by your `CommandProcessor::interpret(statement)` method. When that method sees a quit-statement, is returns a special error value:  `userTerminated`. That value is seen in your main function loop, and the application will automatically terminate.
+## Part 2 -- Complete the `Row` class
 
-Now go make it so by handling the quit-command in you `CommandProcessor::getStatement` and `CommandProcessor::interpret` methods. 
+In your project files, you'll see a new class called `Row` (discussed in lecture). Each row is a collection of `Value` objects associated with a table, that conforms to a schema.  Part of this assignment requires that your Values can be stored (in-memory) in a row.  We use the row as the medium to hold values to be encoded into a storage block buffer, and to be decoded (and revived) into values FROM an encoded storage block. 
 
-## Commit your code to github by Monday, April 8 -- by 11:15pm!
+Data in a `Row` will occasionally change, and need to be encoded into a data structure and saved to persistent storage.  When that happens, a new `Block` object is created, using conversion constructor that accepts your `Row` object.  
 
-After you're code is working, you'll check it into github for grading.  Your homework is graded automatically by our hostile and partially sentient grader "Vlad-the-compiler".  Vlad is generally easy going, but becomes hostile when he has to wait for late assignemnts, as it interferes with watching Stephen Colbert. It's best not to get him upset. 
+For this step, you will implement the `Block::Block(const Row &aRow)` conversion constructor, found in `Storage.cpp`. 
 
-### Students.json
+## Part 3 -- Complete the `Block` class
 
-Remember to update the all the properties in your students.json file. That includes:
+If data can be **encoded**, it will need to be **decoded** to maintain symmetry. Encoded data will live in the storage system, encoded as objects of type `Block`.  When we read `Block`'s from storage, they will (usually) need to be **decoded** back into a `Row` for in-memory processing.  For this step, you will write the logic to **decode** data from a block.
 
-1. names of students in your group
-2. what platform(s) you developed your code on (windows, mac, linux, amiga, beos, plan9, ...)
-3. how much time you spend (collectively) on this assignment
+Implement the `Row::Row(const Block &aBlock)` conversion constructor, found in `Row.cpp`.  This method is where raw data in the data buffer of a `Block` object is turned back into a `Row`, which contains a list of `Value` objects. 
 
 
+## Part 4 -- Testing 
+
+In the following section, we describe a general mechanism for testing your `Value` class. The examples we provide make assumptions about how you have implemented your class. If our assumptions are wrong, you are free to adjust the testing code to be compatible with your implementation of the `Value` class. The most important result of testing is validation output you write. Since that is merely text in an outputstream, the implementation details of your `Value` class should not matter. 
+
+You may freely update the testing code, but your code must conform the _process_ of the testing scenarios we provide, and output logging information where we show in the example tests.
+
+You should also note that the code we provide you may not compile, until you have completed the implementation details we describe in this assignment. 
+
+### 4a -- Basic Testing 
+
+#### -- Testing Constructors
+
+In the `Assignment2Tests.cpp` file, there is a function called `runConstructorTests()`. There are comments in the function that illustrate the construction of variations of your Value class for each of the underlying types we must support. After constructing your class, you will emit a description of that current state of that object (type,value) to an outputstream by implementing `Value::debugDump(ostream):
+
+```
+  std::string theString("hello");
+  //Value theValue1(theString);  //build varchar from std::string
+  //theValue1.debugDump();
+```
+
+#### -- Testing Assignment operators
+
+In the `Assignment2Tests.cpp` file, there is a function called `runAssignmentTests()`. There are comments in the function that illustrate how to assign values your Value class for each of the underlying types we must support. After each test, you will emit a description of that current state of that object (type,value) to an outputstream by implementing `Value::debugDump(ostream).
+
+
+### 4b -- Testing "Encode" of Values
+
+In the `Assignment2Tests.cpp` file, there are serveral tests we've prepared for you.  One of tests is called `runEncodeDecodeTests()`. Starting with a Row (collection of values), you will first write (encode) the values to a buffer. This method automatically generates a random collection of values and stores them in a Row.  You need implement the conversion constructor for Block `Block::Block(const Row &aRow)`, where encoding takes place. The code to do most of the legwork for testing is already written and waiting for you to use.
+
+### 4c -- Testing "Decode" of Values
+
+After you have successfully encoded data in the previous step, your next task is decode that same data, to recreate a copy of your original row. Do that by implementing the `Row::Row(const Block &aBlock)` conversion constructor in the `Row` class. 
+
+Testing for this is already setup in the `runEncodeDecodeTests()` method in the `Assignment2Tests.cpp` file.
+
+### 4d -- Comparing Rows
+
+Our process so far:
+
+1. The testing code auto-generated a row, containing 20 random values
+2. The Row was encoded into a new block (in the `runEncodeDecodeTests` function in `Assignment2Tests.cpp`)
+3. The encoded block is decoded _back_ into a `Row` object
+
+Your final task is to write a `Row::operator==` that tests whether two `Row` objects are equivalent.  In our test, if our original row and our new row _are_ equivalent, it means our encode/decode phase worked correctly. This method must compare the number of values stored in the rows (original vs. decoded), along with the type and actual value of each `Value` object stored in the rows.
+
+
+### Submit your assignment via github
+
+Vlad-the-compiler is eagerly awaiting your submission.
 
 

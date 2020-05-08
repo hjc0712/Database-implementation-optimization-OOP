@@ -23,6 +23,7 @@ namespace ECE141 {
 		switch(aResult.code) {
 			case ECE141::unknownCommand: std::cout << "Unknown command: "; break;
 			case ECE141::userTerminated: break; //ignore this...
+			case ECE141::keywordExpected: 
 			default: std::cout << "Unknown error"; break;
 		}
 		std::cout << std::endl;
@@ -32,32 +33,30 @@ namespace ECE141 {
 	StatusResult CommandProcessor::interpret(const Statement &aStatement) {
 		switch(aStatement.getType()) {
 			case Keywords::version_kw:
-				std::cout << "T12 Database Version: 0.1" << std::endl;
+				std::cout << "Team11 Database Version: 0.2.14" << std::endl;
 				break;
 			case Keywords::help_kw:
-				std::cout << "The left column describes what needs to be typed"
-						  << " in to the command line." 	<< std::endl;
+				std::cout << "\nThe left column describes what needs to be" 
+						  << " typed in to the command line.\n";
 				std::cout << "Where ever a series of \"...\" this is where"
-						  << " your information should be " << std::endl;
+						  << " your information should be \n";
 				std::cout << "inserted without the quotations or periods. This"
-						  << " information may be a "		<< std::endl;
-				std::cout << "name of a table, database, or actual data." 
-															<< std::endl;
+						  << " information may be a \n";
+				std::cout << "name of a table, database, or actual data.\n";
 				std::cout << "The right column is the description of what the"
-						  << " command will do.\n"			<< std::endl;
-				std::cout << "--Commands--    --Description--"
-															<< std::endl;
+						  << " command will do.\n";
+				std::cout << "|-Commands-|    |-Description-|\n";
 				std::cout << "_______________________________________________"
-						  << "_________________________"	<< std::endl;
+						  << "_________________________\n";
 				std::cout << " version         This shows what version of our"
-						  << " Database you are using." 	<< std::endl;
+						  << " Database you are using.\n";
 				std::cout << " help            This does what you are looking"
-						  << " at right now dummy."			<< std::endl;
-				std::cout << " quit            The program will find it's"
-						  << " bugout bag and skip town."   << std::endl;
+						  << " at right now dummy.\n";
+				std::cout << " quit            The program will find its"
+						  << " bugout bag and skip town.\n";
 				break;
 			case Keywords::quit_kw:
-				std::cout << "Program terminating..." << std::endl;
+				std::cout << "Goodbye My Dear..." << std::endl;
 				return StatusResult(Errors::userTerminated,
 									Errors::userTerminated);
 			default:
@@ -93,7 +92,7 @@ namespace ECE141 {
 				}
 			}
 			else return StatusResult{ECE141::unknownCommand};
-	
+			
 			if(!theResult) showError(theResult);
 		}
 		return theResult;

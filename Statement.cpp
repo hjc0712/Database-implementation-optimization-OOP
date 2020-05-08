@@ -12,7 +12,7 @@
 namespace ECE141 {
   
   Statement::Statement(Tokenizer &aTokenizer, Keywords aStatementType)
-    : tokenizer(aTokenizer), stmtType(aStatementType)  {
+    :  stmtType(aStatementType), tokenizer(aTokenizer) {
   }
   
   Statement::Statement(const Statement &aCopy) : tokenizer(aCopy.tokenizer) {
