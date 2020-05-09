@@ -1,6 +1,6 @@
 //
 //  Statement.cpp
-//  Database
+//  Database3
 //
 //  Created by rick gessner on 3/20/19.
 //  Copyright © 2019 rick gessner. All rights reserved.
@@ -11,18 +11,21 @@
 
 namespace ECE141 {
   
-  Statement::Statement(Tokenizer &aTokenizer, Keywords aStatementType)
-    :  stmtType(aStatementType), tokenizer(aTokenizer) {
+  Statement::Statement(Keywords aStatementType) : stmtType(aStatementType)  {
   }
   
-  Statement::Statement(const Statement &aCopy) : tokenizer(aCopy.tokenizer) {
-    stmtType=aCopy.stmtType;
+  Statement::Statement(const Statement &aCopy) : stmtType(aCopy.stmtType) {
   }
   
   Statement::~Statement() {
   }
   
-  StatusResult Statement::run() {
+  //USE: -------------------
+  StatusResult Statement::parse(Tokenizer &aTokenizer) {
+    return StatusResult{};
+  }
+  
+  StatusResult Statement::run(std::ostream &aStream) const {
     //return commandable.runStatement(*this);
     return StatusResult();
   }

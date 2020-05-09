@@ -1,138 +1,164 @@
-# ECE141 - Spring 2019 -- Assignment #2
-### Encoding/Decoding Dynamic Data Values
-### Due, April 15 2019 @ 11:15pm
+# ECE141b -- Spring 2019
+## Assignment #3 - Due Tuesday, April 30, 2019, 11:15pm
 
-In this assignment you're going to be building out some fundamental classes (models) to deal with data handling. All the assignments after this one deal with core database programming.
+## 0. Setup your configuration
 
-### Quick note on working with project files
+Before working with database files, you must configure the system to know _where_ you want the files to be stored. On our testing machines (mac/unix), we generally store these files in the `/tmp` folder. Windows users may want to choose a different location.  
 
-> In assignment one, you worked on a `Tokenizer` and simple `Statement` construction and command-routing.  Assignment2, and all subsequent assignments, will build upon the prior assignments.
+### 0.1. Setting up your configuration
 
-> For most assignments,  new files (with new capabilities) will be introducted into the system. Keeping your files in sync from one assignment to the next could be huge hassle. This is because the project files you get from an assignment don't include the changes you made to files in your last assignment.
+There are a few configuration settings you'll need to setup.
 
-> Our answer to "keeping our sanity" as we incrementally update our system, is simple. With each new assignment, we expect that you'll take ALL your code files (.hpp and .cpp) from the _prior_ assignment, and copy them into your new project folder. You can safely overwrite all the files in your project, and the NEW project files won't have a counterpart in the prior assignment. 
+#1. Default Storage Path 
 
-Just follow this process:
+`Storage::getDefaultStoragePath()` is a method that provides a path to the location on your computer where you want your DB files to be stored.  Your first task is to choose a location for your files, and update this method to return that path as a `const char*`. 
 
-1. Check out your new assignment from github classroom
-2. Copy all the source files (.cpp, .hpp, student.json) from your LAST assignment, on top of files from NEW assignment
+#2. Indicate Your Platform
 
-If you're using an IDE, make sure to rescan the files in your project folder to pick up new files added in the new assignment
+Next, you need to setup `FolderReader::getDefaultPlatform()` to return a suitable value for your machine. By default, this is set to `Mac`. Change this to match your platform: (mac, unix, windows).
 
-## Part 1 -- Dynamic Types with a `Value` Class
+### 0.2. Import `Value.hpp` and `Value.cpp`
 
-One of the key capabilities of your database is to manage (store/retrieve) data in a variety of types (int, varchar, date,...). Python makes easy work of this by supporting dynamic typing. C++, on the other hand, is quite demanding about strong data types. Since your DB needs to support multiple data types, you'll need to provide a solution to deal with this problem.
+Copy `Value.hpp/.cpp` files from Assignment2 into the Assignment3 directory.  Depending on how you wrote them, you may have to tweak them to use them for Assignement3.  We tried to keep the changes to a minimum.  All the processes are the same (`Value` objects will be stored in memory, and encoded/decode from `Block` for persistence.)
 
-Generally speaking, you have a few alternatives: 
+### 0.3. Import `Tokenizer.hpp/Tokenizer.cpp`
 
-1. A generic base class, with nested sub-classes for each actual type you want to handle (bool, int, float, unix_timestamp, varchar,...)
-2. A dynamic class type that can intrinsically store any type of data you want to handle
-3. Others alternatives you can think of?
+If your `Tokenizer` class is working great, then copy it over from Assignment2, into the Assignment3 directory.  If you're not happy with your `Tokenizer`, you can use the `RGTokenizer.hpp/.cpp` class we provided for you.  To use that class, you have to make sure it is imported into main(). Somewhere around line 50 in `main.cpp` is where we construct a `Tokenizer`. You can either use yours, or construct an instance of `RGTokenizer`.  The `RGTokenizer` was designed to handle tokenization challenges your class hasn't had to deal with yet, and it can save you time in later assignments. We prefer that you keep your `Tokenizer`. 
 
-Any of these strategies to data handling can be made to work, and it's up to you to decide which you want to implement. No alternative is perfect, and all will present trade-offs in terms of performance and complexity. 
+### NOTE
 
-### Requirements
+The underlying database platform has been extended and updated since version 2. It's been tested on unix/mac, but not much on Windows. If you see any windows specific problems, let us know right away and we'll correct the issues.
 
-1. You will create one or more classes (in `Value.hpp` and `Value.cpp`) that allow you to store data (in memory) that hold data-values described by a database table schema.  As we discussed in class, a schema describes all the fields in a given table. For a `Contact` schema, that might include properties like `[name, address, city, state, zip, phone, email, birthday...]`. 
+In particular, checkout the `FolderReader` class. We tried to create a windows compatible version. If anyone finds that the `WindowsFolderReader` methods don't work, please report the problem on Piazza.  If you're the first to fix it, we'll give you a few extra points.
 
-2. Check the comments in the existing `Value.hpp` file to see what methods you MUST implement (also shown below)
 
-3. Your `Value` class(es) must be support the following types: bool, int, float, unix_timestamp, varchar (others if you like). 
+## 1. `Create Database` Command 
+### Implications
+Creating a database refers to the process of creating a file to hold the database contents.  This file will be empty, except for the a table-of-contents block at block zero.  Opening/Creating/Reading/Writing block-stream storage files is handled by the `Storage` class. You may want to take a look at the `Storage.hpp` file now, to get familiar with the storage interface it provides. It's pretty small, about 15 methods. 
 
-4. Your solution must not leak memory, and demonstrate reasonable memory and performance efficiency 
+### Handling `DBManager::CreateDatabase()`
 
-5. Implement `Value::debugDump(std::ostream &anOutput)` that outputs a description of the current state of your value, in the format shown below (in this example your Value is holding a float):
+When you run your app, the main event loop is created (main.cpp), and an input console is available for your user to type commands. The first command we'll handle is `create table <name>`.  The `DBManager` class will automatically create a `CreateDatabase` statement object, route it, and attempt to run it.  You'll want to focus on code starting in `DBManager::createDatabase`. 
+
+Creating a new Database storage file is easy, in involves simply creating a new `Database` object with the right flags. 
+The `Database` class can be constructed using either of these 'mode' tags: `CreateNewDatabase` or `OpenExistingDatabase`.  In this case, we want to use the tag: `CreateNewDatabase{}`.  
+
+Here is an outline of the tasks you need to accomplish in the `DBManager::createDatabase(name)` method:
+
+1. If activeDB isn't empty, call releaseDB (you can only have 1 activeDB at a time)
+2. Create a new database on the heap (using `CreateNewDatabase` tag).
+3. Set `activeDB` to the new DB you just created
+4. Show the user a message indicating success or failure
+5. Return the appropriate error code
+
+### If this works (and it should)...
+
+1. Assign the member-pointer `active` the value of your new `Database` object.  
+2. Write a message to `std::cout` indicating the command succeeded.
+3. Return `StatusResult{noError}`.
+
+
+### If it failed...
+
+Return an appropriate error code to the caller to indicate the problem. 
+
+## 2. `Show Databases` Command 
+### What this command does
+
+The  `Show Databases` command is used to print a list of known database files to the console. It's a convenient way for your user to see which databases already exist. It's also useful in testing whether the `create database <name>` command worked.  We've already done the work of tokenization, automatically created a valid `ShowDatabasesStatement` object for you, and routed it. Start by looking at the method: `DBManager::ShowDatabases()`.
+
+### `FolderView` 
+
+This application uses the MVC design pattern, so whenever you want to present data to your user, you'll want to create a view.  Since we're trying to see a list of files in a folder, we want to create a `FolderView`. Fortunately, the `FolderView` class has been created for you (top of `DBManager.cpp`).  `FolderView` will use the `FolderReader` class to get a list of files, and then `FolderView` will present those files when you call the `FolderView::show()` method.
+
+### `FolderReader` 
+
+Showing a list of existing databases requires little more than checking your standard storage location for the presence of files with the extension `.db`. The `FolderReader` class was designed for this task: it scans a list of files in a given folder, and calls a `callback function` with the name of each file it finds, using the `Visitor` design pattern.
+
+We have provided you a default implementation (for mac). If you're a unix or windows user, you need to customize/complete the implementation for `UnixFolderReader` or `WindowsFolderReader` (in `FolderReader.cpp`) so they can read a directory on your platform.  Don't worry --- every OS makes this easy (a very few lines of code).  Use the Google Machine or StackOverflow to find out how to read files in a directory for your platform. 
+
+### Writing the `ShowDatabases` method
+
+Now that we have working `FolderView` and `FolderReader` objects for your platform, all you need to do this create these objects, connect them, and let them do the work:
+
+1. Call the `FolderReader::factory` method to create a `FolderReader` for your platform.
+2. Construct a new folderView object (with given reader) on the heap
+3. Tell the view to show itself on std::cout ...
+4. Make sure you aren't leaking resources you've created when this method is finished
+
+If all goes well, you'll see your list of database files like this example:
+```
+1. foo.db
+2. bar.db
+3. baz.db
+... (others you created)...
+```
+
+## 3. `Describe Database` Command 
+The  `describe database <name>` command is custom command we created that will "dump out" the contents of a database storage-stream file for debugging purposes. It's a convenient way for you to test if your database code is working correctly.  As before, we've already done the work of tokenization, automatically created a valid `DescribeDatabaseStatement` object for you, and routed it.
+
+Take a look at the `DBManager::describeDatabase` method in `DBManager.cpp`.  You'll see that it accepts the name of a database file to describe, and attemps to load that `Database` object into memory. Presuming that works, it calls, `Database::describe(output)` to the `Database` object you loaded. After the `Database::describe(std::ostream)` finishes execution, the associated `Database` object is __deleted__ from memory.
+
+Clearly, the real work is done by the `Database` class, so let's look at `Database::describe(std::ostream&)` in `Database.cpp`.  Just like before (in `show databases` command), we create a new view, this time `DescribeDatabaseView` and pass it a reference the database member `storage`.  The `storage` member manages low-level block storage, and is used by our view to iterate the blocks in a storage file. 
+
+### `DescribeDatabaseView` 
+
+Again, since this is an MVC application, we need to create a view, in this case, a `DescribeDatabaseView`. This view talks to the `Storage::each()` method, to iterate the list of blocks in a storage file.  You'll notice that `Storage::each()` method accepts a callback function. In this case the `DescribeDataView` provides the callback method itself, `DescribeDatabaseView::operator()`.  The `Storage::each` method iterates the list of blocks in the associated container, and sends each block to the `DescribeDatabaseView` object for processing. The view prints the block type (and other information) to the output stream for the user to see.
+
+To complete this part of the assignment, implement the `Database::describe()` method, by doing the following:
+
+1. Create a new `DescribeDatabaseView` object
+2. Call show(outputStream)  on the new view
+3. Don't forget to clean up any memory you used
+4. Return the proper `StatusResult` to the caller
+
+If all goes as planned, your output should look like this example:
 
 ```
-   type: float, value: 3.14
+0. block TOC
+1. block Entity
+2. block Data
+3. block Data
+...(more)...
 ```
 
-### Creating a Value class
 
-The Value class will provide functionality to allow your to system to store dynamic user values.
+## 4. `Drop Database` Command 
+### What this command does
 
-```
-  class Value {
+The  `drop database <name>` command is used to delete a database file (<name>.db) from your storage folder. As before, tokenization, statement creation, and routing are all done for you. Your job starts in the `DBManager::dropDatabase()` method in `DBManager.cpp`. You've been passed an argument that indicates the name of the database to be deleted.
   
-    //YOU have to fill out this class according to your strategy for holding variant data types...
-    
-    //This class needs multiple ctors() for each type (book, timestamp, int, float, varchar)...
-    //This class needs operator=, for each basic type...
-    //This class needs conversion operator for each basic type
+The outline of your task is:
 
-    size_t getSize();
-    DataType getType();
-    
-    StatusResult become(DataType aType); //cause the value to assume given type
-
-    friend bool operator < (const Value &arg1, const Value &arg2) {}  //your data must be comparable...
-
-  };  
-```
-
-## Part 2 -- Complete the `Row` class
-
-In your project files, you'll see a new class called `Row` (discussed in lecture). Each row is a collection of `Value` objects associated with a table, that conforms to a schema.  Part of this assignment requires that your Values can be stored (in-memory) in a row.  We use the row as the medium to hold values to be encoded into a storage block buffer, and to be decoded (and revived) into values FROM an encoded storage block. 
-
-Data in a `Row` will occasionally change, and need to be encoded into a data structure and saved to persistent storage.  When that happens, a new `Block` object is created, using conversion constructor that accepts your `Row` object.  
-
-For this step, you will implement the `Block::Block(const Row &aRow)` conversion constructor, found in `Storage.cpp`. 
-
-## Part 3 -- Complete the `Block` class
-
-If data can be **encoded**, it will need to be **decoded** to maintain symmetry. Encoded data will live in the storage system, encoded as objects of type `Block`.  When we read `Block`'s from storage, they will (usually) need to be **decoded** back into a `Row` for in-memory processing.  For this step, you will write the logic to **decode** data from a block.
-
-Implement the `Row::Row(const Block &aBlock)` conversion constructor, found in `Row.cpp`.  This method is where raw data in the data buffer of a `Block` object is turned back into a `Row`, which contains a list of `Value` objects. 
+1. Call `Storage::getDatabasePath(name)` to get  a full path to the db file
+2. Create a `FolderReader` for your platform, and call `FolderReader->exists(name)` to see if the system knows about the named file. If it doesn't, return an error.
+3. Assuming the name is a real database, call `std::remove(name)` to delete the file
+4. Make sure you clean up any objects you created
+5. Display a message (std::cout) to your user indicating the you deleted their file
+6. Return the appropriate error code
 
 
-## Part 4 -- Testing 
 
-In the following section, we describe a general mechanism for testing your `Value` class. The examples we provide make assumptions about how you have implemented your class. If our assumptions are wrong, you are free to adjust the testing code to be compatible with your implementation of the `Value` class. The most important result of testing is validation output you write. Since that is merely text in an outputstream, the implementation details of your `Value` class should not matter. 
+## 5. `Use Database` Command 
+### What this command does
 
-You may freely update the testing code, but your code must conform the _process_ of the testing scenarios we provide, and output logging information where we show in the example tests.
+The  `use database <name>` command is used to load a named database file into memory, for use in subsequent commands. As before, tokenization, statement creation, and routing are all done for you. Your job starts in the `DBManager::useDatabase()` method in `DBManager.cpp`. You've been passed an argument that indicates the name of the database to be loaded/used.
+  
+The outline of your task is:
 
-You should also note that the code we provide you may not compile, until you have completed the implementation details we describe in this assignment. 
+1. Try to load the database with the given name (Call `DBManager::load(name)`)
+2. If that succeeds, set your internal `activeDB` member to this new DB* object
+3. Display a message to your user saying it worked (if it did), otherwise, show an error message
 
-### 4a -- Basic Testing 
+NOTE: You can only have 1 open (active) database at a time. If another database is already active, make sure you release it first by calling `DBManager::releaseDB()`.
 
-#### -- Testing Constructors
+## Testing
+Make sure you test your system carefully. All of the commands listed in this assignment must be working correctly. Verify that you can successfully create a database file, show it's contents, use it, and drop (delete) the database file.  Also make sure your existing commands (version, help, quit) continue to work correctly.
 
-In the `Assignment2Tests.cpp` file, there is a function called `runConstructorTests()`. There are comments in the function that illustrate the construction of variations of your Value class for each of the underlying types we must support. After constructing your class, you will emit a description of that current state of that object (type,value) to an outputstream by implementing `Value::debugDump(ostream):
+Vlad-the-compiler will test this using a script file.  You can pass the name of a script to your application as an argument, and the main() function will run that script, rather than starting up in interactive mode.
 
-```
-  std::string theString("hello");
-  //Value theValue1(theString);  //build varchar from std::string
-  //theValue1.debugDump();
-```
+## Submit  Your Work
+### Your assignment is due Tuesday, April 30, at 11:15pm
 
-#### -- Testing Assignment operators
-
-In the `Assignment2Tests.cpp` file, there is a function called `runAssignmentTests()`. There are comments in the function that illustrate how to assign values your Value class for each of the underlying types we must support. After each test, you will emit a description of that current state of that object (type,value) to an outputstream by implementing `Value::debugDump(ostream).
-
-
-### 4b -- Testing "Encode" of Values
-
-In the `Assignment2Tests.cpp` file, there are serveral tests we've prepared for you.  One of tests is called `runEncodeDecodeTests()`. Starting with a Row (collection of values), you will first write (encode) the values to a buffer. This method automatically generates a random collection of values and stores them in a Row.  You need implement the conversion constructor for Block `Block::Block(const Row &aRow)`, where encoding takes place. The code to do most of the legwork for testing is already written and waiting for you to use.
-
-### 4c -- Testing "Decode" of Values
-
-After you have successfully encoded data in the previous step, your next task is decode that same data, to recreate a copy of your original row. Do that by implementing the `Row::Row(const Block &aBlock)` conversion constructor in the `Row` class. 
-
-Testing for this is already setup in the `runEncodeDecodeTests()` method in the `Assignment2Tests.cpp` file.
-
-### 4d -- Comparing Rows
-
-Our process so far:
-
-1. The testing code auto-generated a row, containing 20 random values
-2. The Row was encoded into a new block (in the `runEncodeDecodeTests` function in `Assignment2Tests.cpp`)
-3. The encoded block is decoded _back_ into a `Row` object
-
-Your final task is to write a `Row::operator==` that tests whether two `Row` objects are equivalent.  In our test, if our original row and our new row _are_ equivalent, it means our encode/decode phase worked correctly. This method must compare the number of values stored in the rows (original vs. decoded), along with the type and actual value of each `Value` object stored in the rows.
-
-
-### Submit your assignment via github
-
+Make sure to update your students.json file. 
 Vlad-the-compiler is eagerly awaiting your submission.
-
-

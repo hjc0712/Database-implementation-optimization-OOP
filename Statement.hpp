@@ -1,6 +1,6 @@
 //
 //  Statement.hpp
-//  Database
+//  Database3
 //
 //  Created by rick gessner on 3/20/19.
 //  Copyright © 2019 rick gessner. All rights reserved.
@@ -10,6 +10,7 @@
 #define Statement_hpp
 
 #include "keywords.hpp"
+#include <iostream>
 
 namespace ECE141 {
   
@@ -17,19 +18,19 @@ namespace ECE141 {
   
   class Statement {
   public:
-                            Statement(Tokenizer &aTokenizer, Keywords aStatementType=Keywords::unknown);
-                            Statement(const Statement &aCopy);
+    Statement(Keywords aStatementType=Keywords::unknown_kw);
+    Statement(const Statement &aCopy);
     
     virtual                 ~Statement();
     
+    virtual   StatusResult  parse(Tokenizer &aTokenizer);
+    
     Keywords                getType() const {return stmtType;}
     virtual   const char*   getStatementName() const {return "statement";}
-    virtual   StatusResult  run();
+    virtual   StatusResult  run(std::ostream &aStream) const;
     
   protected:
-    Keywords   stmtType;
-    Tokenizer  &tokenizer;
-    
+    Keywords   stmtType;    
   };
   
 }

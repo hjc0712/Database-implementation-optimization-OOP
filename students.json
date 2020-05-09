@@ -1,21 +1,21 @@
 {
-  "course": "ECE141B",
+  "course": "ECE141B"
   "term"  : "SP19",
   "total_hours" : 0,
-  "assignment"  : 2,
-  "due_date"    : "Monday April 15, 11:15p",
+  "assignment"  : 1,
+  "due_date"    : "...",
   "students": [
     {
-      "name " : "Jichen Hong",
-      "pid"   : "A53269655",
-      "email" : "jhong@eng.ucsd.edu",
-      "os"    : "mac"
+      "name " : "Your Name",
+      "pid"   : "Your StudentId",
+      "email" : "Your Email",
+      "os"    : "windows|mac|linux",
     },
     {
-      "name"  : "Ryan Kim",
-      "pid"   : "A15349767",
-      "email" : "rhk023@ucsd.edu",
-      "os"    : "windows"
+      "name"  : "Your Name",
+      "pid"   : "Your StudentId",
+      "email" : "Your Email",
+      "os"    : "windows|mac|linux",
     }
   ]
 }
