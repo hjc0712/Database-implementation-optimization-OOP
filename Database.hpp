@@ -13,62 +13,51 @@
 #include <string>
 #include <iostream>
 #include <map>
-#include "CommandProcessor.hpp"
 #include "Storage.hpp"
 #include "Row.hpp"
+#include "Entity.hpp"
+#include "Filters.hpp"
 
 namespace ECE141 {
-  
-  class Parser;
-  class Statement;
-  class Entity;
-  
 
-  class Database  {
-  public:
-    
-    Database(const std::string aPath, CreateNewStorage);
-    Database(const std::string aPath, OpenExistingStorage);
+	class Statement;
 
-    //Database(const Database &aDatabase);
-    
-    ~Database();
-    
-    bool            tableExists(const std::string aName);
+	class Database  {
+	public:
 
-    StatusResult    saveEntities();
-    StatusResult    showTables(std::ostream &anOutput);
+		Database(const std::string aPath, CreateNewStorage);
+		Database(const std::string aPath, OpenExistingStorage);
 
-    std::string&    getName() {return name;}
-    Entity*         getEntity(const std::string &aName);
+		//Database(const Database &aDatabase);
 
-    StatusResult    createTable(Entity *anEntity);
-    StatusResult    dropTable(const std::string &aName);
+		~Database();
 
-    StatusResult    describe(std::ostream &anOutput); //dump the DB (storage) for debug purpose
+		std::string&    getName() {return name;}
+		Entity*         getEntity(const std::string &aName);
+		StatusResult    describe(std::ostream &anOutput); //dump the DB (storage) for debug purpose
+		StatusResult    saveEntities();
 
-    //Table related...
+		//Row related...
+		StatusResult    deleteRows(const Entity &anEntity, const Filters &aFilters);
+		StatusResult    insertRow(const Row &aRow, const std::string &aTableName);
+		StatusResult    updateRows(KeyValues &aList, const Entity &anEntity, const Filters &aFilters);
+		StatusResult    selectRows(RowCollection &aColl,    const Entity &anEntity,
+		                        const Filters &aFilters,	const StringList *aList=nullptr);
 
-/*
+		//Table related...
+		StatusResult    createTable(Entity *anEntity);
+		StatusResult    dropTable(const std::string &aName);
+		StatusResult    showTables(std::ostream &anOutput);
+		bool            tableExists(const std::string aName);
 
-    coming soon...
+		
 
-    StatusResult    insertRow(Row &aRow, const std::string &aTableName);
-    RowCollection*  selectRows(const PropertyList &aFields, const FilterList &aFilters, const std::string &aTableName);
-    StatusResult    updateRows(const KeyValues &aKVList, const FilterList &aFilters, const std::string &aTableName);
-    StatusResul     deleteRow(const FilterList &aFilters, const std::string &aTableName);
- 
-    ...others...
- 
- */
+	protected:
+		std::string                     name;
+		Storage                         storage;
+		std::map<std::string, Entity*>  entities;
+	};
 
-    
-  protected:
-    std::string                     name;
-    Storage                         storage;
-    std::map<std::string, Entity*>  entities;
-  };
-  
 }
 
 #endif /* Database_hpp */

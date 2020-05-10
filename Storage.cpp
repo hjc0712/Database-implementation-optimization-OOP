@@ -11,8 +11,6 @@
 #include <iostream>
 #include <sstream>
 
-#define _CRT_SECURE_NO_WARNINGS 1  //turn off annoying WINDOWS warnings...
-#define _CRT_SECURE_NO_DEPRECATE 1 //turn off annoying WINDOWS warnings...
 
 namespace ECE141 {
   
@@ -171,11 +169,11 @@ namespace ECE141 {
       size_t theLength=aName.length();
 #if defined(__APPLE__) || defined(__linux__)
       std::strncpy(theEntity.name, aName.c_str(), theLength);
-#elif
+#else
       strncpy_s(theEntity.name, kStoredIdentifierLen, aName.c_str(), theLength);
 #endif
       theEntity.name[theLength]=0;
-         
+      
       theEntity.blocknum=theResult.value;
       memcpy(&toc.entities.items[toc.entities.header.count++], &theEntity, sizeof(PersistEntity));
       theResult=writeBlock(theEntity.blocknum, aBlock);

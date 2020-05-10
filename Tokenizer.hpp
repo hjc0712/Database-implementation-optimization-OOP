@@ -49,7 +49,8 @@ namespace ECE141 {
     virtual StatusResult  tokenize();
     virtual Token&        tokenAt(int anOffset);
     size_t                size() {return tokens.size();}
-    
+    size_t                remaining() {return index<size() ? size()-index :0;}
+
     virtual void          restart() {index=0;}
     virtual bool          more() {return index<size();}
     virtual bool          next(int anOffset=1);

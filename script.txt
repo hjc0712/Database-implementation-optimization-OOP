@@ -1,0 +1,9 @@
+create database foo;
+show tables;
+CREATE TABLE Names (id integer AUTO_INCREMENT PRIMARY KEY, first_name VARCHAR(30) NOT NULL);
+show tables;
+describe Names;
+drop table Names;
+show tables;
+describe database foo;
+drop database foo;

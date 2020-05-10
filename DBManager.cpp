@@ -127,7 +127,7 @@ namespace ECE141 {
         return StatusResult{noError};
       }
       catch(...) {
-          return StatusResult{storageFull};
+        
       }
     }
     return StatusResult{noError};

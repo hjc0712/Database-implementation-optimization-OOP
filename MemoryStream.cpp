@@ -113,9 +113,10 @@ namespace ECE141 {
   }
   
   BufferReader& operator >> (BufferReader& istm, std::string& aString) {
-    aString.clear();
+    if(!aString.empty())
+      aString.clear();
     
-    uint8_t theSize = 0;
+    uint8_t theSize = 17;
     istm.read(theSize);
     
     if(theSize<=0)

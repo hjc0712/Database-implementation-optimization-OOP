@@ -12,24 +12,25 @@
 #include "Tokenizer.hpp"
 #include "Value.hpp"
 #include "Helpers.hpp"
+#include "algorithm"
 
 namespace ECE141 {
 
 
-  class RGTokenizer : public Tokenizer {
-  public:
-    
-                RGTokenizer(std::istream &anInputStream);
-    virtual StatusResult  tokenize();
-    Token&                tokenAt(int anOffset);
+	class RGTokenizer : public Tokenizer {
+	public:
+		RGTokenizer(std::istream &anInputStream);
+		virtual StatusResult  tokenize();
+		Token&                tokenAt(int anOffset);
 
-    void            dump();
-    
-    std::string     readWhile(callback aCallback);
-    std::string     readUntil(char aTerminal, bool addTerminal=false);
-    std::string     readUntil(callback aCallback, bool addTerminal=false);
-    
-  };
+		void            dump();
+
+		std::string     readWhile(callback aCallback);
+		std::string     readUntil(char aTerminal, bool addTerminal=false);
+		std::string     readUntil(callback aCallback, bool addTerminal=false);
+		
+		size_t			remaining() {return index<size() ? size()-index :0;}
+	};
 
 }
 

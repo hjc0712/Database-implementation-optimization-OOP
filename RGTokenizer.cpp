@@ -7,7 +7,6 @@
 //
 
 #include "RGTokenizer.hpp"
-#include <algorithm>
 
 namespace ECE141 {
   
@@ -32,7 +31,7 @@ namespace ECE141 {
   }
   
   bool isOperator(char aChar) {
-    return strchr("+-/*%=", aChar);
+    return strchr("+-/*%=<!>", aChar);
   }
   
   bool isSign(char aChar) {
@@ -126,7 +125,7 @@ namespace ECE141 {
       else if(isAlphaNum(theChar)) {
         std::string theString = readWhile(isAlphaNum);
         std::string temp(theString);
-        transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
+        std::transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
         
         Keywords theKeyword = Helpers::getKeywordId(temp);
         if(Keywords::unknown_kw!=theKeyword) {

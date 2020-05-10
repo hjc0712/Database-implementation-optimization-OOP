@@ -10,8 +10,22 @@
 #define Helpers_h
 
 #include "keywords.hpp"
+#include "Value.hpp"
 
 namespace ECE141 {
+  
+  static std::map<std::string, Operators> gOperators = {
+    std::make_pair("=", Operators::equal_op),
+    std::make_pair("!=", Operators::notequal_op),
+    std::make_pair("not", Operators::notequal_op),
+    std::make_pair("<", Operators::lt_op),
+    std::make_pair("<=", Operators::lte_op),
+    std::make_pair(">", Operators::gt_op),
+    std::make_pair(">=", Operators::gte_op),
+    std::make_pair("and", Operators::and_op),
+    std::make_pair("or", Operators::or_op),
+    std::make_pair("between", Operators::between_op)
+  };
   
   
   class Helpers {
@@ -59,7 +73,7 @@ namespace ECE141 {
         default:                    return "unknown";
       }
     }
-
+    
     static const char* dataTypeToString(DataType aType) {
       switch(aType) {
         case DataType::int_type:        return "integer";
@@ -71,8 +85,8 @@ namespace ECE141 {
         default:                return "unknown";
       }
     }
-
-    //USE: ---validate that given keyword is a datatype...
+    
+    // USE: ---validate that given keyword is a datatype...
     static bool isDatatype(Keywords aKeyword) {
       switch(aKeyword) {
         case Keywords::char_kw:
@@ -83,6 +97,14 @@ namespace ECE141 {
           return true;
         default: return false;
       }
+    }
+    
+    static Operators toOperator(std::string aString) {
+      auto theIter = gOperators.find(aString);
+      if (theIter != gOperators.end()) {
+        return theIter->second;
+      }
+      return Operators::unknown_op;
     }
     
     static int getFunctionId(const std::string anIdentifier) {
@@ -100,8 +122,8 @@ namespace ECE141 {
       }
       return false;
     }
-
-
+    
+    
   };
 }
 #endif /* Helpers_h */

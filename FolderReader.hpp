@@ -54,6 +54,6 @@ namespace ECE141 {
     
     
     
-};
+}
 
 #endif /* FolderReader_hpp */

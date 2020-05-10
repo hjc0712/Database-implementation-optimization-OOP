@@ -24,7 +24,7 @@ namespace ECE141 {
         std::cout << "DB::141 is shutting down." << std::endl;
         return StatusResult(ECE141::userTerminated);
         break;
-      case Keywords::version_kw: std::cout << "Version 0.1" << std::endl; break;
+      case Keywords::version_kw: std::cout << "Version 0.4" << std::endl; break;
       case Keywords::help_kw: std::cout << "Show help here..." << std::endl; break;
       default: break;
     }
@@ -49,21 +49,16 @@ namespace ECE141 {
     return nullptr;
   }
   
-  // USE: -------------------------------------------------------
+  // USE: parse tokens in tokenizer and create assocated statement;
+  //      If you can't do it, ask your next (chain-of-resp) to try...
   StatusResult CommandProcessor::processInput(Tokenizer &aTokenizer) {
-    StatusResult theResult{noError};
-    
-    while(theResult && aTokenizer.more()) {
-      if(Statement *theStatement=getStatement(aTokenizer)) {
-        theResult=interpret(*theStatement);
-      }
-      else if(next) {
-        return next->processInput(aTokenizer);
-      }
-      else return StatusResult{ECE141::unknownCommand};
-      
+    if(Statement *theStatement=getStatement(aTokenizer)) {
+      return interpret(*theStatement);
     }
-    return theResult;
+    else if(next) {
+      return next->processInput(aTokenizer);
+    }
+    return StatusResult{ECE141::unknownCommand};
   }
   
   // USE: retrieve active db (if available) to subystem...

@@ -12,9 +12,9 @@
 #include <stdint.h>
 #include <string>
 #include <fstream>
-#include "Errors.hpp"
 #include <functional>
 #include "Row.hpp"
+#include "Errors.hpp"
 
 namespace ECE141 {
   
@@ -102,7 +102,7 @@ namespace ECE141 {
     
     Block(BlockHeader &aHeader) : header(aHeader), data() {}
     
-    Block(const KeyValues &aKVList) {
+    Block(const KeyValues  &aKVList) {
       //STUDENT: You need to implement this...
     }
     
@@ -151,7 +151,8 @@ namespace ECE141 {
     PersistEntity*  findEntityInTOC(const std::string &aName); //return NULL if not found...
 
     Storage&        eachBlock(StorageCallback aCallback);
-    
+    uint32_t        getTotalBlockCount();
+
   protected:
     Block           toc;
     std::fstream    stream;
@@ -159,7 +160,6 @@ namespace ECE141 {
     
     bool            isReady() const;
     StatusResult    findFreeBlockNum();
-    uint32_t        getTotalBlockCount();
     
     friend class Database;
   };
