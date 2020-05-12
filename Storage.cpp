@@ -1,6 +1,6 @@
 //
 //  Storage.cpp
-//  Database3
+//  ECEDatabase
 //
 //  Created by rick gessner on 4/1/18.
 //  Copyright © 2018 rick gessner. All rights reserved.
@@ -11,9 +11,12 @@
 #include <iostream>
 #include <sstream>
 
+#define _CRT_SECURE_NO_WARNINGS 1
+#define _CRT_SECURE_NO_DEPRECATE 1 //turn off annoying ms warnings...
 
 namespace ECE141 {
   
+
   //Return path to the folder where you want to store your DB's...
   const char* Storage::getDefaultStoragePath() {
     return "/tmp";
@@ -64,7 +67,7 @@ namespace ECE141 {
   // USE: Do WHATEVER you want to do to manage your file here. Maybe, create a TOC block?
   StatusResult Storage::setupEmptyStorage() {    
     //STUDENT: It's TOTALLY up to you how you want to manage storage file internals...
-    //         My default approach to keep my list of entities (TOC) in block 0...
+    //         Our default approach to keep the list of entities (TOC) in block 0...
     return addBlock(toc);
   }
   
@@ -91,7 +94,7 @@ namespace ECE141 {
     stream.seekg(stream.tellg(), std::ios::beg); //force read mode; dumb c++ issue...
     stream.seekg(0, std::ios::end);
     int thePos = (int)stream.tellg();
-    return thePos / kBlockSize;
+    return thePos / sizeof(Block);
   }
   
   //Linear scan (ugh) for free blocks; if we don't fine one, append a new one...
@@ -103,7 +106,7 @@ namespace ECE141 {
 
     stream.seekg(stream.tellg(), std::ios::beg); //force read mode; dumb c++ issue...
     for(uint32_t theIndex=0;theIndex<theCount;theIndex++) {
-      theResult=readBlock(theIndex, theBlock, sizeof(theBlock));
+      theResult=readBlock(theIndex, theBlock);
       if(!theResult) return theResult;
       if(kFreeBlockType==theBlock.header.type) {
         return StatusResult{noError,theIndex};
@@ -116,7 +119,7 @@ namespace ECE141 {
     
   // USE: read data a given block # ---------------------------------------
   StatusResult Storage::readBlock(int aBlockNumber, Block &aBlock, std::size_t aBlockSize) {
-    stream.seekg(aBlockNumber * kBlockSize);
+    stream.seekg(aBlockNumber * sizeof(Block));
     if(stream.read ((char*)&aBlock, aBlockSize)) {
       return StatusResult{noError};
     }
@@ -125,7 +128,7 @@ namespace ECE141 {
   
   // USE: low-level write data to given block (assumes seekp is set) ------------------------
   StatusResult write(Block &aBlock, std::fstream &aStream) {
-    if(aStream.write ((char*)&aBlock, kBlockSize)) {
+    if(aStream.write ((char*)&aBlock, sizeof(Block))) {
       aStream.flush();
       return StatusResult{};
     }
@@ -135,7 +138,7 @@ namespace ECE141 {
   // USE: write data a given block (after seek) ---------------------------------------
   StatusResult Storage::writeBlock(int aBlockNumber, Block &aBlock) {
     stream.seekg(stream.tellg(), std::ios::beg); //attemp to sync stream buffers...
-    stream.seekp(aBlockNumber * kBlockSize);
+    stream.seekp(aBlockNumber * sizeof(Block));
     return write(aBlock, stream);
   }
   
@@ -221,16 +224,16 @@ namespace ECE141 {
     return StatusResult{notImplemented};
   }
 
-  //**USE: call this to iterate blocks for your own purpose. You'll get a callback with each block
+  // USE: call this to iterate blocks for your own purpose. You'll get a callback with each block
   Storage& Storage::eachBlock(StorageCallback aCallback) {
     uint32_t      theCount=getTotalBlockCount();
     Block         theBlock;
     StatusResult  theResult{noError};
     
     for(uint32_t theIndex=0;theIndex<theCount;theIndex++) {
-      theResult=readBlock(theIndex, theBlock, sizeof(theBlock));
+      theResult=readBlock(theIndex, theBlock);
       if(theResult) {
-        bool theResult = aCallback(theBlock, theIndex);
+        theResult = aCallback(*this, theBlock, theIndex);
         if(!theResult) break;
       }
       else break;

@@ -14,6 +14,7 @@
 #include <map>
 #include <iostream>
 #include "Errors.hpp"
+#include "MemoryStream.hpp"
 
 namespace ECE141 {
 
@@ -139,7 +140,7 @@ namespace ECE141 {
 		bool operator<(float					aFloat);
 		bool operator<(bool						aBool);
 		bool operator<(int						anInteger);
-		//Greater Than
+        //Greater Than
 		bool operator>(const Value				&aValue)		const;
 		bool operator>(Value					&aValue);
 		bool operator>(unsigned int				aTime);
@@ -167,6 +168,10 @@ namespace ECE141 {
 
 		//Deconstructor Declaration
 		~Value();
+
+		//Friends to allow for using Value's privates.
+		friend BufferReader& operator >> (BufferReader& istm, Value &aValue);
+		friend BufferWriter& operator << (BufferWriter& ostm, const Value &aValue);
 
 	protected:
 		//The Value's Type.

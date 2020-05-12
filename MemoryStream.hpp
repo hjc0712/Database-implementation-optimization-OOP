@@ -111,7 +111,7 @@ namespace ECE141 {
 	BufferWriter& operator << (BufferWriter& ostm, const float aValue);
 	BufferWriter& operator << (BufferWriter& ostm, const char* aValue);
 	BufferWriter& operator << (BufferWriter& ostm, const std::string &aValue);
-
+//    BufferWriter& operator << (BufferWriter& ostm, const Value aValue);
 }
 
 #endif /* MemoryStream_h */

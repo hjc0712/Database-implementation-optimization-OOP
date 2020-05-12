@@ -25,10 +25,10 @@ namespace ECE141 {
 	public:
 		DescribeDatabaseView(Storage &aStorage) : storage{aStorage}, stream(nullptr) {}
 
-        bool operator()(const Block &aBlock, uint32_t aBlockNum) {
+        StatusResult operator()(Storage &aStorage, const Block &aBlock, uint32_t aBlockNum) {
             //STUDENT: Write code here to display information about the given block to your output stream.
             //         Make this as informative as you can.
-            std::cout << aBlockNum << ". block ";
+			std::cout << aBlockNum << ". block ";
             switch(aBlock.header.type) {
                 case 'T': std::cout << "TOC\n"; break;
                 case 'D': std::cout << "Data\n"; break;
@@ -36,15 +36,15 @@ namespace ECE141 {
                 case 'F': std::cout << "Free\n"; break;
                 case 'I': std::cout << "Index\n"; break;
                 default:
-                    break;
-            }
-            return true;
+					break;
+			}
+            return StatusResult();
         }
         
 		bool show(std::ostream &anOutput) {
 			//STUDENT: Implement this method...
             stream = &anOutput;
-            storage.eachBlock(*this);
+			storage.eachBlock(*this);
 			return true;
 		}
 

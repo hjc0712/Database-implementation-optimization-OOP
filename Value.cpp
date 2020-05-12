@@ -770,4 +770,45 @@ namespace ECE141 {
 	}
 
 	Value::~Value() {}
+
+
+	//What my friends can do----------------------------------------------------
+	BufferReader& operator >> (BufferReader& aReader, Value &aValue) {
+		uint32_t readInt;
+		switch (aValue.type) {
+		case DataType::timestamp_type:
+			aReader >> aValue.vuint;		break;
+		case DataType::varchar_type:
+			aReader >> aValue.vstring;		break;
+		case DataType::float_type:
+			aReader >> aValue.vfloat;		break;
+		case DataType::bool_type:
+			aReader >> aValue.vbool;		break;
+		case DataType::int_type:
+			readInt = (uint32_t)aValue.vint;
+			aReader >> readInt;				break;
+		default:							break;
+		}
+		return aReader;
+	}
+
+	BufferWriter& operator << (BufferWriter& aWriter, const Value &aValue) {
+		uint32_t writeInt;
+		switch (aValue.type) {
+		case DataType::timestamp_type:
+			aWriter << aValue.vuint;		break;
+		case DataType::varchar_type:
+			aWriter << aValue.vstring;		break;
+		case DataType::float_type:
+			aWriter << aValue.vfloat;		break;
+		case DataType::bool_type:
+			aWriter << aValue.vbool;		break;
+		case DataType::int_type:
+			writeInt = (uint32_t)aValue.vint;
+			aWriter << writeInt;			break;
+		default:							break;
+		}
+		return aWriter;
+	}
 }
+

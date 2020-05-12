@@ -1,6 +1,6 @@
 //
 //  RGTokenizer.cpp
-//  Database3
+//  Database1
 //
 //  Created by rick gessner on 3/24/19.
 //  Copyright © 2019 rick gessner. All rights reserved.
@@ -31,7 +31,7 @@ namespace ECE141 {
   }
   
   bool isOperator(char aChar) {
-    return strchr("+-/*%=<!>", aChar);
+    return strchr("+-/*%=>!<", aChar);
   }
   
   bool isSign(char aChar) {
@@ -143,7 +143,7 @@ namespace ECE141 {
 
     return theResult;
   }
-  
+
   // USE: ----------------------------------------------
   Token& RGTokenizer::tokenAt(int anOffset) {
     if(anOffset>=0 && anOffset<tokens.size()) {
@@ -151,6 +151,7 @@ namespace ECE141 {
     }
     throw std::out_of_range("invalid offset");
   }  
+
 
   // USE: ----------------------------------------------
   void RGTokenizer::dump() {

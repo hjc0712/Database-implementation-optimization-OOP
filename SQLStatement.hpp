@@ -31,6 +31,7 @@ namespace ECE141 {
     
     StatusResult          parseValueList(StringList &aList, Tokenizer &aTokenizer);
     StatusResult          parseIdentifierList(StringList &aList, Tokenizer &aTokenizer);
+    StatusResult          parseIdValueList(KeyValues &aList, Tokenizer &aTokenizer);
 
     virtual StatusResult  run(std::ostream &anOutput);
     
@@ -140,7 +141,7 @@ namespace ECE141 {
 
   //----------------------------------
   
-  class UpdateStatement: public SQLStatement {
+  class UpdateStatement: public SQLStatement, public Filtered {
   public:
     
     UpdateStatement(SQLInterpreter &anInterpreter);
@@ -151,7 +152,7 @@ namespace ECE141 {
     StatusResult parse(Tokenizer &aTokenizer);
     StatusResult run(std::ostream &aStream) const;
     
-    std::vector<std::string>  fields;
+    KeyValues                 keyValues;
     std::vector<Row>          rows; //one for each record they're inserting...
   };
   

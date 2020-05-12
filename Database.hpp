@@ -22,7 +22,7 @@ namespace ECE141 {
 
 	class Statement;
 
-	class Database  {
+	class Database {
 	public:
 
 		Database(const std::string aPath, CreateNewStorage);
