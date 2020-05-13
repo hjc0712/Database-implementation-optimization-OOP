@@ -22,6 +22,7 @@ namespace ECE141 {
 		Row(int32_t aBlockNumber=0);
 		Row(const Row &aRow);
 		Row(const Block &aBlock);
+        Row(KeyValues &aKeyValueList); //build a row
 		~Row();
 
 		int32_t			getBlockNumber() {return blockNumber;}
@@ -34,6 +35,7 @@ namespace ECE141 {
 		friend class	Database;
 		friend class	RecordsView;
 		friend class	Filters;
+        
 
 	protected:
 		int32_t       blockNumber;

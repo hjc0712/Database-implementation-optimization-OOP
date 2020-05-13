@@ -20,7 +20,10 @@ namespace ECE141 {
     
     Value theLHS = lhs.value;
     Value theRHS = rhs.value;
-
+//    theRHS.become(theRHS.getType());
+    
+      
+      
     if(TokenType::identifier==lhs.type) {
       theLHS=aList[lhs.name];
     }
@@ -29,6 +32,12 @@ namespace ECE141 {
       theRHS=aList[rhs.name];
     }
     
+//      std::string theLHS_s = theLHS;
+//      std::string theRHS_s = theRHS.vstring;
+      DataType realDT = theRHS.getType();
+      theRHS.setType(DataType::varchar_type);
+      theRHS.become(realDT);
+      
     switch(op) {
       case Operators::equal_op: return theLHS==theRHS; break;
       case Operators::notequal_op: return !(theLHS==theRHS); break;

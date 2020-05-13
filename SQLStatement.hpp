@@ -150,7 +150,7 @@ namespace ECE141 {
     StatusResult parseValueLists(Tokenizer &aTokenizer, Entity &anEntity);
     
     StatusResult parse(Tokenizer &aTokenizer);
-    StatusResult run(std::ostream &aStream) const;
+//    StatusResult run(std::ostream &aStream) const;
     
     KeyValues                 keyValues;
     std::vector<Row>          rows; //one for each record they're inserting...

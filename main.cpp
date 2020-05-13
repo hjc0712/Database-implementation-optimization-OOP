@@ -27,6 +27,7 @@ void showError(ECE141::StatusResult &aResult) {
     case ECE141::unknownDatabase: std::cout << "Unknown database "; break;
     case ECE141::unknownTable: std::cout << "Unknown table "; break;
     case ECE141::tableExists: std::cout << "Table exists "; break;
+    case ECE141::invalidArguments: std::cout << "Invalid Arguments "; break;
     case ECE141::userTerminated: break; //ignore this...
     default: std::cout << "Unknown error"; break;
   }

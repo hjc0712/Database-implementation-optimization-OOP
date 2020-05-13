@@ -116,7 +116,7 @@ namespace ECE141 {
     if(!aString.empty())
       aString.clear();
     
-    uint8_t theSize = 17;
+    uint8_t theSize = 0;
     istm.read(theSize);
     
     if(theSize<=0)

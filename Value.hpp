@@ -140,7 +140,7 @@ namespace ECE141 {
 		bool operator<(float					aFloat);
 		bool operator<(bool						aBool);
 		bool operator<(int						anInteger);
-        //Greater Than
+		//Greater Than
 		bool operator>(const Value				&aValue)		const;
 		bool operator>(Value					&aValue);
 		bool operator>(unsigned int				aTime);
@@ -158,6 +158,7 @@ namespace ECE141 {
 		//This finds the type assigned to the Value.
 		DataType		getType()								const;
     	DataType		getType();
+        void            setType(DataType aDT) {type=aDT;}
 
 		//This causes the value to assume given type.
     	StatusResult	become(DataType aType);
@@ -173,11 +174,12 @@ namespace ECE141 {
 		friend BufferReader& operator >> (BufferReader& istm, Value &aValue);
 		friend BufferWriter& operator << (BufferWriter& ostm, const Value &aValue);
 
+        
 	protected:
 		//The Value's Type.
 		DataType 			type;
 		//The String had issues being part of the union.
-		std::string			vstring;
+		std::string            vstring;
 		//This union will be 4 bytes big.
 		union {
 			bool			vbool;

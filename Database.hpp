@@ -41,7 +41,7 @@ namespace ECE141 {
 		StatusResult    deleteRows(const Entity &anEntity, const Filters &aFilters);
 		StatusResult    insertRow(const Row &aRow, const std::string &aTableName);
 		StatusResult    updateRows(KeyValues &aList, const Entity &anEntity, const Filters &aFilters);
-		StatusResult    selectRows(RowCollection &aColl,    const Entity &anEntity,
+		StatusResult    selectRows(RowCollection &aColl,    Entity &anEntity,
 		                        const Filters &aFilters,	const StringList *aList=nullptr);
 
 		//Table related...
@@ -55,7 +55,7 @@ namespace ECE141 {
 	protected:
 		std::string                     name;
 		Storage                         storage;
-		std::map<std::string, Entity*>  entities;
+		std::map<std::string, Entity*>  entities;  // an entity correspondding to a table. it's a tablename--entity map
 	};
 
 }

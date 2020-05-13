@@ -307,8 +307,12 @@ namespace ECE141 {
 		switch(type) {
 			case DataType::timestamp_type:
 				return (int)vuint;
-			case DataType::varchar_type:
-				return std::stoi(vstring, nullptr);
+            case DataType::varchar_type:{
+                if(vstring.size()>0)
+                    return std::stoi(vstring);
+                else
+                    return 0;
+            }
 			case DataType::float_type:
 				return (int)vfloat;
 			case DataType::bool_type:
@@ -686,7 +690,7 @@ namespace ECE141 {
 	size_t Value::getSize() {
 		switch(type) {
 			case DataType::timestamp_type:	return sizeof(vuint);		break;
-			case DataType::varchar_type:	return sizeof(vstring);		break;
+			case DataType::varchar_type:	return vstring.size();		break;
 			case DataType::float_type:		return sizeof(vfloat);		break;
 			case DataType::bool_type:		return sizeof(vbool);		break;
 			case DataType::int_type:		return sizeof(vint);		break;
@@ -696,7 +700,7 @@ namespace ECE141 {
 	size_t Value::getSize() const {
         switch(type) {
             case DataType::timestamp_type:	return sizeof(vuint);		break;
-            case DataType::varchar_type:	return sizeof(vstring);		break;
+            case DataType::varchar_type:	return vstring.size();		break;
             case DataType::float_type:		return sizeof(vfloat);		break;
             case DataType::bool_type:		return sizeof(vbool);		break;
             case DataType::int_type:		return sizeof(vint);		break;
@@ -771,44 +775,66 @@ namespace ECE141 {
 
 	Value::~Value() {}
 
-
 	//What my friends can do----------------------------------------------------
 	BufferReader& operator >> (BufferReader& aReader, Value &aValue) {
 		uint32_t readInt;
-		switch (aValue.type) {
-		case DataType::timestamp_type:
-			aReader >> aValue.vuint;		break;
-		case DataType::varchar_type:
-			aReader >> aValue.vstring;		break;
-		case DataType::float_type:
-			aReader >> aValue.vfloat;		break;
-		case DataType::bool_type:
-			aReader >> aValue.vbool;		break;
-		case DataType::int_type:
-			readInt = (uint32_t)aValue.vint;
-			aReader >> readInt;				break;
-		default:							break;
+		uint8_t dtype;
+		std::string astring;
+		aReader >> dtype;
+		switch (dtype) {
+		case 1:
+			uint32_t anInt;
+			aReader >> anInt;
+			aValue = anInt;		break;
+		case 2:
+			aReader >> astring;
+			aValue = astring;		break;
+		case 3:
+			uint32_t aFloat;
+			aReader >> aFloat;
+			aValue = aFloat;		break;
+		case 4:
+			bool abool;
+			aReader >> abool;
+			aValue = abool;		break;
+        case 5:{
+			uint32_t bnInt;
+			aReader >> bnInt;
+            int cnInt = int(bnInt);
+			aValue = cnInt;
+            aValue.vstring = std::to_string(cnInt);
+            break;}
+		default:			break;
 		}
 		return aReader;
 	}
 
 	BufferWriter& operator << (BufferWriter& aWriter, const Value &aValue) {
 		uint32_t writeInt;
+		uint8_t dtype;
 		switch (aValue.type) {
 		case DataType::timestamp_type:
-			aWriter << aValue.vuint;		break;
+			dtype = 1;
+			aWriter << dtype; 
+			aWriter << static_cast<uint32_t>(aValue.vuint);		break;
 		case DataType::varchar_type:
+			dtype = 2;
+			aWriter << dtype; 
 			aWriter << aValue.vstring;		break;
 		case DataType::float_type:
-			aWriter << aValue.vfloat;		break;
+			dtype = 3;
+			aWriter << dtype; 
+			aWriter << static_cast<uint32_t>(aValue.vfloat);		break;
 		case DataType::bool_type:
-			aWriter << aValue.vbool;		break;
+			dtype = 4;
+			aWriter << dtype; 
+			aWriter << static_cast<bool>(aValue.vbool);		break;
 		case DataType::int_type:
-			writeInt = (uint32_t)aValue.vint;
-			aWriter << writeInt;			break;
+			dtype = 5;
+			aWriter << dtype; 
+			aWriter << static_cast<uint32_t>(aValue.vint);			break;
 		default:							break;
 		}
 		return aWriter;
 	}
 }
-

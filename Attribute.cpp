@@ -117,9 +117,9 @@ namespace ECE141 {
   
   // USE: Write attribute properties into a memory stream...
   BufferWriter& operator << (BufferWriter& aWriter, const Attribute &aValue) {
-    char theBuffer[17];
-    std::sprintf(theBuffer, "%-17s",aValue.name.c_str());
-      aWriter << theBuffer
+//    char theBuffer[17];
+//    std::sprintf(theBuffer, "%-17s",aValue.name.c_str());
+    aWriter << aValue.name
       << static_cast<char>(aValue.type)
       << static_cast<uint8_t>(aValue.size)
       << static_cast<bool>(aValue.autoIncrement)

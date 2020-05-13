@@ -37,6 +37,7 @@ namespace ECE141 {
     invalidAttribute=410,
     invalidArguments=420,
     keyValueMismatch=430, //# of fieldnames doesn't match values...
+    hashMismatch = 440,
     
     //storage/io related...
     readError=500,

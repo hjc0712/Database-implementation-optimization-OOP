@@ -57,7 +57,7 @@ namespace ECE141 {
                 break;
             attributes.push_back(theAttr);
         }
-        
+        hash = aBlock.header.extra;
 	}
 
 	Entity::Entity() {}
@@ -138,7 +138,7 @@ namespace ECE141 {
 	// USE: write given row into given block (using entity as guide...)
 	StatusResult Entity::encodeData(KeyValues &aDataList, Block &aBlock) {
 		StatusResult theResult{noError};
-
+		aBlock = aDataList;
 		// STUDENT: Encode your entity data into the given block...
 
 		return theResult;
@@ -153,9 +153,20 @@ namespace ECE141 {
 	StatusResult Entity::decodeData(const Block &aBlock, KeyValues &aValuesList,
 						const StringList *aFields) const {
 		StatusResult theResult{noError};
-
+		Block &ablk = const_cast<Block&> (aBlock);
+		BufferReader theReader(ablk.data, kPayloadSize, kPayloadSize);
+		uint8_t size;
+		theReader >> size;
+        while(1){
+			std::string astr;
+            theReader >> astr;
+			Value aval;
+			theReader >> aval;
+            if(astr.empty())
+                break;
+			aValuesList.insert(std::pair<std::string, Value>(astr, aval));
+        }
 		// STUDENT: Decode your entity from the given block...
-
 		return theResult;
 	}
 

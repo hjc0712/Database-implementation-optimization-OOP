@@ -104,44 +104,20 @@ namespace ECE141 {
     
     // USE: encode a key/value list into this block payload area...
     Block(const KeyValues  &aKVList) {
-      //STUDENT: You need to implement this...
       ECE141::BufferWriter theWriter(data, kPayloadSize);
       theWriter << (uint8_t)aKVList.size(); //record number of fields being written...
       for(auto &thePair : aKVList) {
-          theWriter << thePair.first << thePair.second;
-          
-//          switch(thePair.second.getType()){
-//              case DataType::bool_type:{
-//                  bool aBool = thePair.second;
-//                  theWriter << aBool;
-//                  break;
-//              }
-//              case DataType::float_type:{
-//                  float aFloat = thePair.second;
-//                  theWriter << aFloat;
-//                  break;
-//              }
-//              case DataType::int_type:{
-//                  uint32_t aInt = thePair.second;
-//                  theWriter << aInt;
-//                  break;
-//              }
-//              case DataType::varchar_type:{
-//                  std::string aString = thePair.second;
-//                  theWriter << aString;
-//                  break;
-//              }
-//              case DataType::timestamp_type:{
-//                  unsigned int vuint = thePair.second;
-//                  theWriter << vuint;
-//                  break;
-//              }
-//              default:
-//                  break;
-//              }
-          }
+        theWriter << thePair.first << thePair.second;
       }
-    
+    }
+    Block& operator=(const KeyValues  &aKVList) {
+      ECE141::BufferWriter theWriter(data, kPayloadSize);
+      theWriter << (uint8_t)aKVList.size(); //record number of fields being written...
+      for(auto &thePair : aKVList) {
+        theWriter << thePair.first << thePair.second;
+      }
+      return *this;
+    }
     
     //we use attributes[0] as table name...
     BlockHeader   header;
@@ -188,10 +164,8 @@ namespace ECE141 {
     StatusResult    dropEntity(const std::string &aName);
     
     PersistEntity*  findEntityInTOC(const std::string &aName); //return NULL if not found...
-    
-
-    Storage&    eachBlock(StorageCallback aCallback);
-
+    PersistEntity*  findDataInEntity();
+    Storage&   eachBlock(StorageCallback aCallback);
     
   protected:
     Block           toc;

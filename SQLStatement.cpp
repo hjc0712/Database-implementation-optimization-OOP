@@ -14,6 +14,7 @@
 #include "Value.hpp"
 #include <exception>
 #include "EntityDescriptionView.hpp"
+#include <algorithm>
 
 namespace ECE141 {
   
@@ -375,7 +376,20 @@ namespace ECE141 {
       theData[theName]=theValue;
       //std::cout << "size " << theData.size() << "\n";
     }
-
+      
+      //check if there are extra invalid attribute in the user input
+      std::map<std::string,std::string>::iterator iter;
+      iter = aKVList.begin();
+      while(iter != aKVList.end()) {
+          try {
+              anEntity.getAttribute(iter->first);
+          } catch (...) {
+              std::cout<<"insert error: The table doesn't have attribute -- "<<iter->first<<std::endl;
+              return StatusResult{invalidArguments};
+          }
+          iter++;
+      }
+      
     Row theRow(theData);
     aStatement.rows.push_back(theRow);
 
@@ -656,6 +670,6 @@ namespace ECE141 {
   }
   
 //  StatusResult UpdateStatement::run(std::ostream &aStream)  const{
-//     return interpreter.updateRows(name, keyValues, filters);
+//    // return interpreter.updateRows(name, keyValues, filters);
 //  }
 }

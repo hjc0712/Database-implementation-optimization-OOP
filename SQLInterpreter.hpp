@@ -31,8 +31,7 @@ namespace ECE141 {
     StatusResult          insertRow(const Row &aRow, const std::string &aTableName); //low level DB call...
     StatusResult          deleteRows(const std::string &aTableName, const Filters &aFilters); //low level
     StatusResult          selectRows(const std::string &aTableName, const Filters &aFilters); //low level
-//    StatusResult          updateRows(const std::string &aName, const KeyValues &aKeyValue, const Filters &aFilters); //low level
-      
+
     StatusResult          describeTable(const std::string &aName, std::ostream &anOutput);
 
   protected:

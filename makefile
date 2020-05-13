@@ -1,4 +1,4 @@
-CXX=clang++
+CXX=g++
 CXXFLAGS=-g -std=c++11 -Wall -pedantic
 BIN=assignment5
 

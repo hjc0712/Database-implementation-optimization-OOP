@@ -27,17 +27,41 @@ namespace ECE141 {
     // USE: this is the main show() for the view, where it presents all the rows...
     bool show(std::ostream &anOutput) {
       //STUDENT: Implement this, to show each row (from aCollection) like this example:
-      //
+      std::string sep = "+-";
+      std::string theResult = "|";
+        int i = 0;
+        int r[100];
+        for(auto curAtt : entity.getAttributes()) {
+        sep.append(curAtt.getSize()+1 ,'-'); 
+        sep += '+';
+        char theBuffer[100];
+            r[i] = curAtt.getSize();
+        std::sprintf(theBuffer, " %-*s |", r[i], curAtt.getName().c_str());
+        theResult += theBuffer;
+            i++;
+      }
+      anOutput << sep << std::endl;
+      anOutput << theResult << std::endl;
+      anOutput << sep << std::endl;
+      int j=i;
 
-      // > select * from Names
-      // +-----------+----------------------+
-      // | id        | first_name           |
-      // +-----------+----------------------+
-      // | 1         | rickg                |
-      // +-----------+----------------------+
-      // | 2         | ramsin               |
-      // +-----------+----------------------+
-      
+      for(auto curRow : collection.getRows()) {
+        KeyValues aKV = curRow->getColumns();
+        std::string aResult = "|";
+          i=j;
+        for(KeyValues::iterator itr = aKV.begin(); itr != aKV.end(); itr++) {
+          char theBuffer[100];
+          itr->second.become(DataType::varchar_type);
+          std::string astr = itr->second;
+          if(astr.empty())
+              continue;
+          std::sprintf(theBuffer, "| %-*s ", r[i-1] ,astr.c_str());
+          aResult = theBuffer + aResult;
+            i--;
+        }
+        anOutput << aResult << std::endl;
+        anOutput << sep << std::endl;
+      }
       return true; //or false ,if your view fails...
     }
     

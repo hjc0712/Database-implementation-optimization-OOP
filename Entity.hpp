@@ -53,6 +53,7 @@ namespace ECE141 {
 
 		Attribute&				getAttribute(const std::string &aName);
 		Value					getDefaultValue(const Attribute &anAttribute);
+        uint32_t                getHash() const {return hash;}
 
 		StatusResult			validate(KeyValues &aList);
 

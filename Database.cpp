@@ -9,6 +9,7 @@
 #include "Database.hpp"
 #include "View.hpp"
 #include "BlockVisitor.hpp"
+#include "RecordsView.hpp"
 //#include "Storage.hpp"
 
 namespace ECE141 {
@@ -169,16 +170,63 @@ namespace ECE141 {
 			//   2. add block to storage
 			//   3. maybe in the future add it to an index
 			//   4. get the next auto_incr value from entity (if you need it for id field)...
+            
+            // get the keyvalue map of aRow
+            Row &curRow = const_cast<Row&> (aRow);
+            KeyValues curKeyValue = curRow.getColumns();
+            
+            // add auto_incr key
+            std::string thePK = theEntity->getPrimaryKey();  //the primary key
+            if(theEntity->getAttribute(thePK).isAutoIncrement()) { // if the primary key is auto_incr
+                Value *curValue = new Value(int(theEntity->getNextAutoIncrementValue()));
+                curKeyValue[theEntity->getPrimaryKey()] = *curValue;
+                curRow.addColumn(thePK, *curValue);
+            }
+            
+            //validate the data in aRow (whether matching the format in entity)
+            for(auto curAttr:theEntity->attributes){
+                std::string curKey = curAttr.getName();
+                ////no user imput value for curAttr
+                if(!curKeyValue.count(curKey)){
+                    if(!curAttr.isNullable())
+					{
+                        return StatusResult{invalidArguments};
+					}
+					else
+                        curKeyValue[curKey] = "NULL";
+                }
+                
+                Value curValue = curKeyValue[curKey];
+                //valid type
+                if(curAttr.getType() != curValue.getType()){
+                    return StatusResult{invalidArguments};
+				}
+					
+                //valid size
+				
+                if(curAttr.getSize() < curValue.getSize()-2) {
+                    return StatusResult{invalidArguments};
+				}
+				
+            }
+            // construct new block and add it to storage
+            Block curBlock = Block(curKeyValue);
+            curBlock.header.extra = theEntity->getHash();
+            storage.addBlock(curBlock);
+            std::cout<<"Insert Successfully!!"<<std::endl;
+            return StatusResult{noError};
 		}
 		return StatusResult{unknownTable};
 	}
 
 	// USE: select a set of rows that match given filters (or all rows if filters are empty)...
-	StatusResult Database::selectRows(RowCollection &aCollection, const Entity &anEntity,
+	StatusResult Database::selectRows(RowCollection &aCollection, Entity &anEntity,
 						const Filters &aFilters, const StringList *aFields) {
 		//STUDENT: Get blocks for this entity from storage, decode into rows, and add to collection
 		//         NOTE:  aFields (if not empty) tells you which fields to load per row;
 		//                otherwise load all fields (*)
+        RowCollector aRC(anEntity, aFilters, aCollection, aFields);
+        storage.eachBlock(aRC);
 		return StatusResult{noError};
 	}
 
