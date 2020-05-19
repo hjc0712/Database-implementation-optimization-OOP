@@ -49,15 +49,15 @@ namespace ECE141 {
 
 	Entity::Entity(Block &aBlock, uint32_t aBlockNum) {
 		//STUDENT: construct an entity (decode) from the given block...
-        BufferReader theReader(aBlock.data, sizeof(aBlock.data), aBlockNum * sizeof(aBlock.data));
-        while(1){
+        BufferReader theReader(aBlock.data, kPayloadSize, kPayloadSize);
+        theReader >> name >> count >> autoincr >> blockNum >> hash >> dirty;
+		while(1){
             Attribute theAttr;
             theReader >> theAttr;
             if(theAttr.getName().size()==0)
                 break;
             attributes.push_back(theAttr);
         }
-        hash = aBlock.header.extra;
 	}
 
 	Entity::Entity() {}
@@ -114,6 +114,7 @@ namespace ECE141 {
 		Block theBlock(kEntityBlockType);
 		BufferWriter theWriter(theBlock.data, sizeof theBlock.data);
 		//STUDENT: Decode your entity into a block, and return it...
+		theWriter << name << count << autoincr << blockNum << hash << dirty;
 		for(int i = 0; i < attributes.size(); i++) {
 			Attribute currAtt = attributes[i];
 			//Didn't realize how easy it is to use the BufferWriter.

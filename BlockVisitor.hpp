@@ -42,8 +42,9 @@ namespace ECE141 {
         
         StatusResult operator() (Storage &aStorage, const Block &aBlock, uint32_t aBlockNum){
             if('D'==aBlock.header.type) {
-              uint32_t hash = Entity::hashString(entity.getName().c_str());
-                if(hash== aBlock.header.extra) {
+              //uint32_t hash = Entity::hashString(entity.getName().c_str());
+                // std::cout << "Entity: " << entity.getHash() << "Block: " << aBlock.header.extra << "\n"; //=========================================================
+                if(entity.getHash()== aBlock.header.extra) {
                     KeyValues curKeyValue;
                     // Row *aRow = new Row(aBlock);
                     // collection.add(aRow);
@@ -54,10 +55,9 @@ namespace ECE141 {
                     // }
                     if(theResult){
                         if(filters.getCount()==0 || filters.matches(curKeyValue)){
-                            Row *curRow = new Row(curKeyValue);
+                            Row *curRow = new Row(aBlockNum);
                             for(auto curKV : curKeyValue) {
-                              curKV.second.become(DataType::varchar_type);
-                              std::string str = curKV.second;
+                                curRow->addColumn(curKV.first, curKV.second);
                             }
                             collection.add(curRow);
                         }

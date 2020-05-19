@@ -308,7 +308,7 @@ namespace ECE141 {
 			case DataType::timestamp_type:
 				return (int)vuint;
             case DataType::varchar_type:{
-                if(vstring.size()>0)
+				if(vstring.size()>0)
                     return std::stoi(vstring);
                 else
                     return 0;
@@ -782,22 +782,22 @@ namespace ECE141 {
 		std::string astring;
 		aReader >> dtype;
 		switch (dtype) {
-		case 1:
+		case '1':
 			uint32_t anInt;
 			aReader >> anInt;
 			aValue = anInt;		break;
-		case 2:
+		case '2':
 			aReader >> astring;
 			aValue = astring;		break;
-		case 3:
+		case '3':
 			uint32_t aFloat;
 			aReader >> aFloat;
 			aValue = aFloat;		break;
-		case 4:
+		case '4':
 			bool abool;
 			aReader >> abool;
 			aValue = abool;		break;
-        case 5:{
+        case '5':{
 			uint32_t bnInt;
 			aReader >> bnInt;
             int cnInt = int(bnInt);
@@ -814,23 +814,23 @@ namespace ECE141 {
 		uint8_t dtype;
 		switch (aValue.type) {
 		case DataType::timestamp_type:
-			dtype = 1;
+			dtype = '1';
 			aWriter << dtype; 
 			aWriter << static_cast<uint32_t>(aValue.vuint);		break;
 		case DataType::varchar_type:
-			dtype = 2;
+			dtype = '2';
 			aWriter << dtype; 
 			aWriter << aValue.vstring;		break;
 		case DataType::float_type:
-			dtype = 3;
+			dtype = '3';
 			aWriter << dtype; 
 			aWriter << static_cast<uint32_t>(aValue.vfloat);		break;
 		case DataType::bool_type:
-			dtype = 4;
+			dtype = '4';
 			aWriter << dtype; 
 			aWriter << static_cast<bool>(aValue.vbool);		break;
 		case DataType::int_type:
-			dtype = 5;
+			dtype = '5';
 			aWriter << dtype; 
 			aWriter << static_cast<uint32_t>(aValue.vint);			break;
 		default:							break;

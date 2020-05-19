@@ -30,6 +30,8 @@ namespace ECE141 {
     tableExists=300,
     unknownTable=310,
     unknownDatabase = 320,
+    failedToDelete = 330,
+    unknownData = 340,
     
     //type related...
     unknownType=400,

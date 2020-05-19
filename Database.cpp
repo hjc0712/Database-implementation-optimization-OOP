@@ -77,11 +77,13 @@ namespace ECE141 {
 	Database::Database(const std::string aName, CreateNewStorage)
 	: name(aName), storage(aName, CreateNewStorage{}) {
 		//we've created storage, but haven't loaded any entities yet...
+		
 	}
 
 	Database::Database(const std::string aName, OpenExistingStorage)
 	: name(aName), storage(aName, OpenExistingStorage{}) {
 		//we've opened storage, but haven't loaded any entities yet...
+
 	}
 
 	Database::~Database() {
@@ -129,6 +131,31 @@ namespace ECE141 {
 	// USE: called to actually delete rows from storage for table (via entity) with matching filters...
 	StatusResult Database::deleteRows(const Entity &anEntity, const Filters &aFilters) {
 		// STUDENT: impelement this
+//        StatusResult theResult{unknownDatabase};
+//        if(Entity *theEntity = getEntity(aName)) {
+//            RowCollection theCollection;
+//            if(theResult = selectRows(theCollection, *theEntity, aFilters)) {
+//                RowList& theRows=theCollection.getRows();
+//                for(auto *theRow : theRows) {
+//                    int32_t  blockID = theRow->getBlockNumber();
+//                    storage.releaseBlock(blockID);
+////                    std::cout<<"Delete Row Successfully!"<<std::endl;
+//                }
+//            }
+//            else{
+//                return StatusResult{unexpectedValue};
+//            }
+//        }
+        RowCollection* aCollection = new RowCollection;
+        Entity &nonConstEntity = const_cast<Entity&> (anEntity);
+        selectRows(*aCollection, nonConstEntity, aFilters);
+        if (aCollection->getRows().empty()) {
+            return StatusResult{unknownData};
+        }
+        for (auto aRow : aCollection->getRows()) {
+            storage.releaseBlock(aRow->getBlockNumber());
+        }
+        delete aCollection;
 		return StatusResult{noError};
 	}
 
@@ -157,9 +184,6 @@ namespace ECE141 {
             return StatusResult{noError};
         }
         return StatusResult{unknownTable};
-        
-        
-		
 	}
 
 	// USE: call this to add a row into the given database...
@@ -253,8 +277,22 @@ namespace ECE141 {
 	}
 
 	// USE: called to update records already in db (future assignment)...
-	StatusResult Database::updateRows(KeyValues &aList, const Entity &anEntity, const Filters &aFilters) {
+	StatusResult Database::updateRow(Row &aRow, const KeyValues &aKVList, const Entity &anEntity){
 		//STUDENT: Implement this...
+        //update row
+//        Row &bRow = const_cast<Row&>(aRow);
+        for(std::map<std::string, Value>::const_iterator it = aKVList.begin(); it!=aKVList.end(); it++){
+            aRow.getColumns()[it->first] = it->second;
+        }
+        //find the certain block and delete
+        int32_t  blockID = aRow.getBlockNumber();
+        storage.releaseBlock(blockID);
+        //construt a new block data and store it to the old block#
+        Block curBlock = Block(aRow.getColumns()); //use bRow's column, cause 'aKVList' only has partial data
+        curBlock.header.extra = anEntity.getHash();
+        storage.writeBlock(blockID, curBlock);
+        std::cout<<"Update Successfully!"<<std::endl;
+        
 		return StatusResult{noError};
 	}
 

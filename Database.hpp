@@ -40,7 +40,7 @@ namespace ECE141 {
 		//Row related...
 		StatusResult    deleteRows(const Entity &anEntity, const Filters &aFilters);
 		StatusResult    insertRow(const Row &aRow, const std::string &aTableName);
-		StatusResult    updateRows(KeyValues &aList, const Entity &anEntity, const Filters &aFilters);
+		StatusResult    updateRow(Row &aRow, const KeyValues &aKVList, const Entity &anEntity);
 		StatusResult    selectRows(RowCollection &aColl,    Entity &anEntity,
 		                        const Filters &aFilters,	const StringList *aList=nullptr);
 

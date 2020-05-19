@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "CommandProcessor.hpp"
 #include "Row.hpp"
+#include "Attribute.hpp"
 
 namespace ECE141 {
   
@@ -30,10 +31,11 @@ namespace ECE141 {
     
     StatusResult          insertRow(const Row &aRow, const std::string &aTableName); //low level DB call...
     StatusResult          deleteRows(const std::string &aTableName, const Filters &aFilters); //low level
-    StatusResult          selectRows(const std::string &aTableName, const Filters &aFilters); //low level
-
     StatusResult          describeTable(const std::string &aName, std::ostream &anOutput);
-
+    StatusResult          selectRows(const std::string &aTableName,
+                                     const Filters &aFilters, const PropertyList &anOrder); //low level
+    StatusResult          updateRows(const std::string &aName, const KeyValues &aKeyValues, const Filters &aFilters);
+    
   protected:
     
     virtual Statement*    getStatement(Tokenizer &aTokenizer);

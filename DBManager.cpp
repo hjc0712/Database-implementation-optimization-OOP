@@ -213,7 +213,7 @@ namespace ECE141 {
       if(!activeDB){
           return StatusResult{ECE141::unknownDatabase};
       }
-    std::cout<<"Using database "<<aName;
+    std::cout << "Using database " << aName << std::endl;
     return StatusResult{noError};
     
   }

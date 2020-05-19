@@ -165,7 +165,7 @@ namespace ECE141 {
     
     PersistEntity*  findEntityInTOC(const std::string &aName); //return NULL if not found...
     PersistEntity*  findDataInEntity();
-    Storage&   eachBlock(StorageCallback aCallback);
+    Storage&        eachBlock(StorageCallback aCallback);
     
   protected:
     Block           toc;

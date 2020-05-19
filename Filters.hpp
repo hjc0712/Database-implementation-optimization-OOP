@@ -14,7 +14,7 @@
 #include <string>
 #include "Errors.hpp"
 #include "Value.hpp"
-#include "RGTokenizer.hpp"
+#include "Tokenizer.hpp"
 
 namespace ECE141 {
   
@@ -58,7 +58,7 @@ namespace ECE141 {
     bool          matches(KeyValues &aList) const;
     Filters&      add(Expression *anExpression);
     
-    friend class RGTokenizer;
+    friend class Tokenizer;
     
   protected:
     Expressions  expressions;
