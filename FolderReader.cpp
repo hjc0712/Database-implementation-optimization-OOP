@@ -14,8 +14,8 @@
   #include <dirent.h>
 #elif __linux__
   #include <dirent.h>
-#elif
-  #include <dirent_win.h>
+#else
+  #include "dirent_win.hpp"
 #endif
 
 
@@ -101,7 +101,9 @@ namespace ECE141 {
   
   class WindowsFolderReader : public FolderReader {
   public:
-    WindowsFolderReader(const char *aPath) : FolderReader(aPath) {}
+    WindowsFolderReader(const char *aPath) : FolderReader(aPath) {
+		path = aPath;
+	}
     
     void each(folder_callback aCallback, const char *anExtension) const {
       //WINDOWS USERS -- I'm guessing at this code...Please VERIFY....
@@ -123,6 +125,7 @@ namespace ECE141 {
         } //for
       }
     }
+    std::string path;
   };
 #endif
   

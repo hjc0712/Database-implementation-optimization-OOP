@@ -95,7 +95,7 @@ namespace ECE141 {
         RowCollection theCollection;
         StatusResult theResult=theDatabase->selectRows(theCollection, *theEntity, aFilters);
         if(anOrderBy.size()) {
-//          theCollection.reorder(anOrderBy);
+          theCollection = theCollection.reorder(anOrderBy, *theEntity);
         }
         if(View *theView=new RecordsView(*theEntity, theCollection )) {
           theView->show(std::cout);

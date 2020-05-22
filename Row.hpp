@@ -12,10 +12,13 @@
 #include <stdio.h>
 #include <vector>
 #include "Value.hpp"
+#include "Attribute.hpp"
+//#include "Entity.hpp"
 
 namespace ECE141 {
 
 	struct Block;
+    class  Entity;
 
 	class Row {
 	public:
@@ -52,6 +55,7 @@ namespace ECE141 {
 
 		RowList&          getRows() {return rows;}
 		RowCollection&    add(Row* aRow);
+        RowCollection& reorder(const PropertyList &anOrder, Entity &anEntity);
 
 	protected:
 		RowList rows;

@@ -630,7 +630,7 @@ namespace ECE141 {
 	StatusResult UpdateStatement::parse(Tokenizer &aTokenizer) {
 		StatusResult theResult(syntaxError);
 
-		if(6<aTokenizer.remaining()) {
+		if(5<aTokenizer.remaining()) {
 			Token &theToken = aTokenizer.current(); //should be 'update'...
 			if(Keywords::update_kw==theToken.keyword) {
 				theToken = aTokenizer.peek(1); //should be identifier...

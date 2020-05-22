@@ -8,6 +8,8 @@
 
 #include "Row.hpp"
 #include "Storage.hpp"
+#include "Entity.hpp"
+#include <algorithm>
 
 namespace ECE141 {
 
@@ -173,6 +175,17 @@ namespace ECE141 {
 		rows.push_back(aRow);
 		return *this;
 	}
+    
+    RowCollection& RowCollection::reorder(const PropertyList &anOrder, Entity &anEntity) {
+        
+        Attribute &theProperty = anEntity.getAttribute(anOrder[0].name);
+
+        sort(rows.begin(), rows.end(), [theProperty](Row *aLHS, Row *aRHS) {
+            return aLHS->columns[theProperty.getName()]
+            < aRHS->columns[theProperty.getName()];
+        });
+        return *this;
+    }
 }
 
 
