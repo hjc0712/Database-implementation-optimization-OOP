@@ -79,7 +79,7 @@ namespace ECE141 {
 		uint32_t		blockNum;  //storage location.
 		uint32_t		hash;      //int hash of schema name
 		bool			dirty;
-
+		uint32_t		index;
 	};
 
 

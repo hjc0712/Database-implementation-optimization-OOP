@@ -2,8 +2,8 @@
   "course": "ECE141B",
   "term"  : "SP19",
   "total_hours" : 10,
-  "assignment"  : 6,
-  "due_date"    : "Tuesday, May 21, 11:15p",
+  "assignment"  : 8,
+  "due_date"    : "June 6 , 2019",
   "students": [
     {
       "name " : "Jichen Hong",

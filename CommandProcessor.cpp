@@ -24,7 +24,7 @@ namespace ECE141 {
         std::cout << "DB::141 is shutting down." << std::endl;
         return StatusResult(ECE141::userTerminated);
         break;
-      case Keywords::version_kw: std::cout << "Version 0.4" << std::endl; break;
+      case Keywords::version_kw: std::cout << "Version 0.8" << std::endl; break;
       case Keywords::help_kw: std::cout << "Show help here..." << std::endl; break;
       default: break;
     }

@@ -30,7 +30,7 @@ namespace ECE141 {
     TokenType   type; //so we know if it's a field, a number, or a string...
     std::string name; //for attr.
     Value       value;
-    uint32_t    entityId;
+    uint32_t    entityId; //hash
   };
   
   struct Expression {
@@ -57,7 +57,7 @@ namespace ECE141 {
     size_t        getCount() const;
     bool          matches(KeyValues &aList) const;
     Filters&      add(Expression *anExpression);
-    
+    Expressions   get() const {return expressions;}
     friend class Tokenizer;
     
   protected:

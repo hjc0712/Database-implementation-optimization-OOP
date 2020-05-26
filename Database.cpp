@@ -11,6 +11,7 @@
 #include "BlockVisitor.hpp"
 #include "RecordsView.hpp"
 //#include "Storage.hpp"
+//#include "Index.hpp"
 
 namespace ECE141 {
 
@@ -87,7 +88,8 @@ namespace ECE141 {
 	}
 
 	Database::~Database() {
-	saveEntities();
+        saveEntities();
+        saveIndexs();
 	}
 
 	// USE: a child object needs a named entity for processing...
@@ -112,6 +114,36 @@ namespace ECE141 {
 		return nullptr;
 	}
 
+	Index* Database::getIndex(const std::string &aName, Entity* theEntity) {
+		//If more grab more from next index block.
+		if(theIndexes.count(aName)) {
+			return theIndexes[aName];
+		}
+		else {
+			if(theEntity->index) {
+				Block theBlock;
+				StatusResult theResult = storage.readBlock(theEntity->index, theBlock, sizeof(theBlock));
+				if(theResult) {
+					Index *theIndex = new Index(theBlock, theEntity->index);
+					theIndexes[aName] = theIndex;
+					Index* curIndex;
+					curIndex = theIndex;
+					while(curIndex->hasNextBlockNum()) {
+						Block theBlock;
+						StatusResult theResult = storage.readBlock(curIndex->getNextBlockNum(), theBlock, sizeof(theBlock));
+						if(theResult) {
+						Index *theIndex = new Index(theBlock, curIndex->getNextBlockNum());
+						theNext[curIndex->getNextBlockNum()] = theIndex;
+						curIndex = theIndex;
+						}
+					}
+					return theIndex;
+				}
+			}
+		}
+		return nullptr;
+	}
+
 	// USE:   Add a new table (entity);
 	// NOTE:  The DB assumes ownership of the entity object...
 	StatusResult Database::createTable(Entity *anEntity) {
@@ -124,6 +156,23 @@ namespace ECE141 {
 		StatusResult theResult= storage.addEntity(theName, theBlock);
 		Entity *theEntity=entities[theName];
 		theEntity->blockNum=theResult.value; //hang on to the blocknum...
+        
+        //for index
+        const AttributeList& theList = anEntity->getAttributes();
+        for(auto attr: theList) {
+            if (attr.isPrimaryKey()) {
+                Index* curTableIndex = new Index(attr.getName(), anEntity->getHash(), attr.getType());
+                //construct the new I block
+                Block theBlock=(*curTableIndex);
+                StatusResult theResult2 = storage.addBlock(theBlock);
+                if(theResult2){
+                    curTableIndex->setBlockNum(theResult2.value);
+					theEntity->index = theResult2.value;
+                }
+                theIndexes[theName] = curTableIndex;  //pushback an empty Tableindex
+                break;
+            }
+        }
 
 		return theResult;
 	}
@@ -154,6 +203,8 @@ namespace ECE141 {
         }
         for (auto aRow : aCollection->getRows()) {
             storage.releaseBlock(aRow->getBlockNumber());
+            Value theIndexKey = aRow->getColumns()[nonConstEntity.getPrimaryKey()];
+            theIndexes[nonConstEntity.getName()]->removeKeyValue(theIndexKey);
         }
         delete aCollection;
 		return StatusResult{noError};
@@ -189,6 +240,8 @@ namespace ECE141 {
 	// USE: call this to add a row into the given database...
 	StatusResult Database::insertRow(const Row &aRow, const std::string &aTableName) {
 		if(Entity *theEntity=getEntity(aTableName)) {
+			if(Index *theIndex =getIndex(aTableName, theEntity)) {
+			}
 			//STUDENT: Add code here to store the row:
 			//   1. encode row into a block
 			//   2. add block to storage
@@ -200,12 +253,15 @@ namespace ECE141 {
             KeyValues curKeyValue = curRow.getColumns();
             
             // add auto_incr key
+            Value index_Key;
             std::string thePK = theEntity->getPrimaryKey();  //the primary key
             if(theEntity->getAttribute(thePK).isAutoIncrement()) { // if the primary key is auto_incr
                 Value *curValue = new Value(int(theEntity->getNextAutoIncrementValue()));
                 curKeyValue[theEntity->getPrimaryKey()] = *curValue;
                 curRow.addColumn(thePK, *curValue);
+                index_Key = *curValue;
             }
+            
             
             //validate the data in aRow (whether matching the format in entity)
             for(auto curAttr:theEntity->attributes){
@@ -236,7 +292,43 @@ namespace ECE141 {
             // construct new block and add it to storage
             Block curBlock = Block(curKeyValue);
             curBlock.header.extra = theEntity->getHash();
-            storage.addBlock(curBlock);
+            StatusResult theResult2 = storage.addBlock(curBlock);
+            
+            // for index if more add new index block;
+            if(theIndexes.count(aTableName)){
+				Index* curIndex;
+				curIndex = theIndexes[aTableName];
+				if (!theIndexes[aTableName]->isFull()) {
+					theIndexes[aTableName]->addKeyValue(index_Key, theResult2.value);
+				}
+				else{
+					while(curIndex->isFull()) {
+						if (!curIndex->hasNextBlockNum()) {
+							//created new index block when full
+							Index* nextIndex =  new Index(*curIndex);
+							Block theBlock=(*nextIndex);
+							StatusResult theResult2 = storage.addBlock(theBlock);
+							if(theResult2){
+								nextIndex->setBlockNum(theResult2.value);
+								curIndex->setNextBlockNum(theResult2.value);
+							}
+							nextIndex->addKeyValue(index_Key, theResult2.value);
+							theNext[nextIndex->getBlockNum()] = nextIndex;
+							curIndex = nextIndex;
+							return StatusResult{noError};
+						}
+						if (curIndex->hasNextBlockNum()) {
+							curIndex = theNext[curIndex->getNextBlockNum()];
+						}
+					}
+					if (theNext.count(curIndex->getBlockNum())){
+							theNext[curIndex->getBlockNum()]->addKeyValue(index_Key, theResult2.value);
+							return StatusResult{noError};
+					}
+				}
+
+			}
+            
             std::cout<<"Insert Successfully!!"<<std::endl;
             return StatusResult{noError};
 		}
@@ -254,6 +346,70 @@ namespace ECE141 {
 		return StatusResult{noError};
 	}
 
+	StatusResult Database::selectRows(RowCollection &theRowCollection, Entity &theEntity, Index &theIndex, const Filters &theFilters) {
+		StatusResult theResult;
+		std::cout << "Number of values stores is " << theIndex.getIndex().size() << '\n';
+		for(auto &theValue: theIndex.getIndex()) {
+			Block tempBlock;
+            KeyValues aList;
+            if(storage.readBlock(theValue.second, tempBlock)) {
+				KeyValues theValues;
+				theResult = theEntity.decodeData(tempBlock, aList);;
+				if(theFilters.getCount() == 0 || theFilters.matches(aList)) {
+					Row *aRow = new Row(theValue.second);
+					for (auto &thePair: aList) {
+						aRow->addColumn(thePair.first, thePair.second);
+					}
+					theRowCollection.add(aRow);
+				}
+				
+			}
+		}
+		if (theIndex.hasNextBlockNum()) {
+			Index *curIndex;
+			curIndex = &theIndex;
+			while (curIndex->hasNextBlockNum()) {
+				curIndex = theNext[theIndex.getNextBlockNum()];
+				for(auto &theValue: curIndex->getIndex()) {
+					Block tempBlock;
+					KeyValues aList;
+					if(storage.readBlock(theValue.second, tempBlock)) {
+						KeyValues theValues;
+						theResult = theEntity.decodeData(tempBlock, aList);;
+						if(theFilters.getCount() == 0 || theFilters.matches(aList)) {
+							Row *aRow = new Row(theValue.second);
+							for (auto &thePair: aList) {
+								aRow->addColumn(thePair.first, thePair.second);
+							}
+							theRowCollection.add(aRow);
+						}
+						
+					}
+				}
+				if(curIndex->hasNextBlockNum()) {
+					curIndex = theNext[curIndex->getNextBlockNum()];
+				}
+			}
+		}
+
+		// else {
+		// 	for(auto& expression:theFilters.get()) {
+		// 		if (storage.readBlock(theIndex.getValue(expression->rhs.value), tempBlock)) {
+		// 			KeyValues theValues;
+		// 				theResult = theEntity.decodeData(tempBlock, aList);;
+
+		// 				Row *aRow = new Row(theIndex.getValue(expression->rhs.value));
+		// 				for (auto &thePair: aList) {
+		// 					aRow->addColumn(thePair.first, thePair.second);
+		// 				}
+		// 				theRowCollection.add(aRow);
+		// 		}
+				
+		// 	}
+		// }
+		return theResult;
+	}
+
 	//USE: resave entities that were in memory and changed...
 	StatusResult Database::saveEntities() {
 		StatusResult theResult{noError};
@@ -265,6 +421,27 @@ namespace ECE141 {
 		}
 		return theResult;
 	}
+    
+    StatusResult Database::saveIndexs() {
+        StatusResult theResult{noError};
+        for (auto aTableIndex : theIndexes) {
+            Block theBlock=(*aTableIndex.second);
+            theResult = storage.writeBlock(aTableIndex.second->getBlockNum(), theBlock);
+//            if(thePair.second->isDirty()) {
+//                Block theBlock=(*thePair.second);
+//                theResult=storage.writeBlock(thePair.second->blockNum, theBlock);
+//            }
+        }
+		for (auto aTableIndex : theNext) {
+            Block theBlock=(*aTableIndex.second);
+            theResult = storage.writeBlock(aTableIndex.second->getBlockNum(), theBlock);
+//            if(thePair.second->isDirty()) {
+//                Block theBlock=(*thePair.second);
+//                theResult=storage.writeBlock(thePair.second->blockNum, theBlock);
+//            }
+        }
+        return theResult;
+    }
 
 	//USE: show the list of tables in this db...
 	StatusResult Database::showTables(std::ostream &anOutput) {

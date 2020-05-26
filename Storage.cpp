@@ -20,7 +20,7 @@ namespace ECE141 {
 	const char* Storage::getDefaultStoragePath() {
         return "/tmp";
 //        return "/home/thevalence/databases/";
-		// return "C:\\databases";
+		// return "/mnt/c/databases";
 
 	}
 
@@ -169,24 +169,25 @@ namespace ECE141 {
         stream.seekg(stream.tellg(), std::ios::beg); //attemp to sync stream buffers...
         stream.seekp(aBlockNum * sizeof(Block));
         StatusResult theResult = write(aBlock, stream);
-        if(theResult && !cache.hasBlock(aBlockNum)) cache.cacheBlock(aBlockNum, aBlock);
+        if(theResult) cache.cacheBlock(aBlockNum, aBlock);
         return theResult;
     }
 
     
 	// USE: save block (in free block, or appended bloc ---------------------
 	StatusResult Storage::addBlock(Block &aBlock) {
-
-
 		StatusResult theResult=findFreeBlockNum();
 		if(theResult) {
-			return writeBlock(theResult.value, aBlock);
+			writeBlock(theResult.value, aBlock);
+			return theResult;
 		}
 
 		stream.seekg(stream.tellg(), std::ios::beg); //attemp to sync stream buffers...
 		stream.seekp(0, std::ios::end); //append...
 
-		return write(aBlock, stream);
+		StatusResult theResult2 = write(aBlock, stream);
+        theResult2.value = theResult.value;
+        return theResult;
 	}
 
 	// USE: mark block as free ---------------------------------------
@@ -235,6 +236,7 @@ namespace ECE141 {
 		int theIndex = findIndexOfEntityInTOC(toc.entities, aName);
 		return theIndex >=0 ? &toc.entities.items[theIndex] : nullptr;
 	}
+
 
 	//** USE: remove entity from TOC and mark entity-block free --------
 	StatusResult Storage::dropEntity(const std::string &aName) {
@@ -301,7 +303,7 @@ namespace ECE141 {
 //            }
 //        }
 //        return queue.front().block;
-        // updateLocation(theBlockNum, hash[theBlockNum].first);
+//        updateLocation(theBlockNum, hash[theBlockNum].first);
         return hash[theBlockNum].first;
 //        return hash2[theBlockNum];
 	}

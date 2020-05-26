@@ -64,6 +64,7 @@ namespace ECE141 {
     
     StatusResult(Errors aCode=noError, uint32_t aValue=0) : code(aCode), value(aValue) {}
     operator bool() {return Errors::noError==code;}
+    // operator = (StatusResult )
   };
  
 }

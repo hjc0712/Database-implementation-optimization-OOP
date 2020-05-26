@@ -55,11 +55,12 @@ namespace ECE141 {
 
   StatusResult SQLInterpreter::describeTable(const std::string &aName, std::ostream &anOutput) {
     if(Database *theDatabase=getActiveDatabase()) {
-      if(Entity *theEntity=theDatabase->getEntity(aName)) {
+      if(Entity *theEntity=theDatabase->getEntity(aName)){
         View *theView = new EntityDescriptionView(*theEntity);
         theView->show(anOutput);
         delete theView;
         return StatusResult{noError};
+      
       }
       return StatusResult{unknownTable};
     }
@@ -91,9 +92,14 @@ namespace ECE141 {
                                           const PropertyList &anOrderBy) {
     if(Database *theDatabase=getActiveDatabase()) {
       if(Entity *theEntity=theDatabase->getEntity(aName)) {
-        // std::cout << "The name of the entity is: " << theEntity->getName() << std::endl; //======================================================================
         RowCollection theCollection;
-        StatusResult theResult=theDatabase->selectRows(theCollection, *theEntity, aFilters);
+        StatusResult theResult;
+        if(Index *theIndex = theDatabase->getIndex(aName, theEntity)) {
+          theResult = theDatabase->selectRows(theCollection, *theEntity, *theIndex, aFilters);
+        }
+        else {
+          theResult=theDatabase->selectRows(theCollection, *theEntity, aFilters);
+        }
         if(anOrderBy.size()) {
           theCollection = theCollection.reorder(anOrderBy, *theEntity);
         }
@@ -104,6 +110,7 @@ namespace ECE141 {
         return theResult;
       }
     }
+
     return StatusResult{unknownDatabase};
   }
   

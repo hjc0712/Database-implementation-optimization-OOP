@@ -159,36 +159,6 @@ namespace ECE141 {
 		};
 	};
 
-	struct Brick {
-		Brick(uint8_t aCount) : count(aCount) {}
-
-		Brick(int aBlockNum, uint8_t aCount, Block aBlock) : blocknumber(aBlockNum), count(aCount), block(aBlock) {}
-
-		bool operator<(const Brick& aBrick) const
-    	{
-    	    //Return true if this is less than loc2
-			return count < aBrick.count;
-    	}
-		bool operator>(const Brick& aBrick) const
-    	{
-    	    //Return true if this is less than loc2
-			return count > aBrick.count;
-    	}
-		bool operator<=(const Brick& aBrick) const
-    	{
-    	    //Return true if this is less than loc2
-			return count <= aBrick.count;
-    	}
-		bool operator>=(const Brick& aBrick) const
-    	{
-    	    //Return true if this is less than loc2
-			return count >= aBrick.count;
-    	}
-		int		blocknumber;
-		uint8_t count;
-		Block block;
-	};
-
 	class BlockCache {
 	public:
 		//	This just checks if in the queue exists the block.
@@ -200,7 +170,7 @@ namespace ECE141 {
         void updateLocation(int aBlockNum, Block aBlock);
 
 	protected:
-		size_t				size = 8;
+		size_t				size = 80;
         std::list<Block>    lru;
         std::unordered_map<int, std::pair<Block, std::list<Block>::iterator> >  hash;
         std::unordered_map<int, Block> hash2;
@@ -244,6 +214,8 @@ namespace ECE141 {
 		PersistEntity*  findEntityInTOC(const std::string &aName); //return NULL if not found...
 		PersistEntity*  findDataInEntity();
 		Storage&        eachBlock(StorageCallback aCallback);
+        
+        StatusResult    findFreeBlockNum();
 
 	protected:
 		Block           toc;
@@ -252,7 +224,7 @@ namespace ECE141 {
 		BlockCache		cache;
 
 		bool            isReady() const;
-		StatusResult    findFreeBlockNum();
+		
 
 		friend class Database;
 	};
